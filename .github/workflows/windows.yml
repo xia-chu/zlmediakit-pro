@@ -1,0 +1,167 @@
+name: Windows
+
+on:
+  issue_comment:
+    types: [ created ]  # 监听 issue 评论创建事件
+
+env:
+  RELEASE: OFF
+
+jobs:
+  build:
+    runs-on: windows-2022
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+      - name: 打印issue评论信息
+        run: |
+          echo "issue number :${{ github.event.issue.number }}"
+          echo "issue 作者 :${{ github.event.comment.user.login }}"
+
+      - name: 过滤issue评论
+        if: github.event.issue.number != 1 || github.event.comment.user.login != 'xia-chu'
+        run: exit 1
+
+      - name: 获取分支和ci名
+        run: |
+          # 启用详细日志
+          $DebugPreference = "Continue"
+          
+          # 获取 GitHub 事件中的评论内容
+          $input_string = "${{ github.event.comment.body }}"
+          
+          # 按空格拆分字符串
+          $lines = $input_string -split '\s+'
+          
+          for ($i = 0; $i -lt $lines.Length; $i++) {
+              $trimmed_line = $lines[$i].Trim()
+          
+              if ($i -eq 0) {
+                  echo "分支: $trimmed_line"
+                  Add-Content -Path $env:GITHUB_ENV -Value "BRANCH=$trimmed_line"
+              } elseif ($i -eq 1) {
+                  echo "ci名: $trimmed_line"
+                  if ($trimmed_line -ne "${{ github.workflow }}") {
+                      echo "ci不匹配"
+                      exit 1
+                  }
+              }
+          }
+
+      - name: 下载源码
+        uses: actions/checkout@v2
+        with:
+          repository: xia-chu/zlmediakit-promax
+          fetch-depth: 1
+          ref: ${{ env.BRANCH }}
+          token: ${{ secrets.ACCESS_TOKEN }}
+          path: .
+
+      - name: 获取git hash
+        run: |
+          $hash = git log -1 --format="%H"
+          Add-Content -Path $env:GITHUB_ENV -Value "HASH=$hash"
+
+      - name: 查询是否是试用版本
+        run: |
+          if (Select-String -Path "CMakeLists.txt" -Pattern "RELEASE_VERSION" -Quiet) {
+              echo "存在试用版本开关"
+          } else {
+              echo "试用版本开关不存在, 中断编译!"
+              exit 1
+          }
+
+      - name: 下载submodule源码
+        run: |
+          mv -Force .gitmodules_github .gitmodules && git submodule sync && git submodule update --init
+          Remove-Item -Path tests\*.cpp -Force
+          Remove-Item -Path api\tests\*.c -Force
+
+      - name: 配置 vcpkg
+        uses: lukka/run-vcpkg@v7
+        with:
+          vcpkgDirectory: '${{github.workspace}}/vcpkg'
+          vcpkgTriplet: x64-windows-release
+          # 2025.11.2
+          vcpkgGitCommitId: 'e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb'
+          vcpkgArguments: 'openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,nvcodec,qsv,amf,aom,dav1d,opencl,opengl,openh264,vpx,vulkan] aws-crt-cpp aws-sdk-cpp[core,s3,transfer]'
+
+      - name: 编译
+        uses: lukka/run-cmake@v3
+        with:
+          useVcpkgToolchainFile: true
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          buildDirectory: '${{github.workspace}}/build'
+          cmakeAppendedArgs: '-DENABLE_FFMPEG=ON -DENABLE_API=OFF -DENABLE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release'
+
+      - name: 设置环境变量
+        run: |
+          # 处理 TAG，替换非法字符为 "_"
+          $tag = "${{ env.BRANCH }}" -replace '[/\?%*:|"<>]', '_'
+          Add-Content -Path $env:GITHUB_ENV -Value "TAG=$tag"
+          
+          # 获取当前日期 (YYYY-MM-DD)
+          $date = Get-Date -Format "yyyy-MM-dd"
+          Add-Content -Path $env:GITHUB_ENV -Value "DATE=$date"
+          
+          # 获取当前时间戳 (Unix 时间戳)
+          $date2 = [int][double]::Parse((Get-Date -UFormat "%s"))
+          Add-Content -Path $env:GITHUB_ENV -Value "DATE2=$date2"
+          
+          # 压缩 release 目录为 release.zip
+          mv -Force release\windows\Release\Debug\* release\windows\Release
+          Remove-Item -Path release\windows\Release\Debug -Force -Recurse
+          Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows-release\tools\ffmpeg\*" -Destination "release\windows\Release" -Force
+          Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows-release\lib\*" -Destination "release\windows\Release" -Force
+          Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows-release\bin\*" -Destination "release\windows\Release" -Force
+          Remove-Item -Path release\windows\Release\*.lib -Force
+          Remove-Item -Path release\windows\Release\*.pdb -Force
+          Compress-Archive -Path release\windows\Release\* -DestinationPath release.zip -Force
+
+      - name: 发布信息
+        run: |
+          $release_info = @"
+          - 分支: ${{ env.BRANCH }}
+          - git hash: ${{ env.HASH }}
+          - 编译日期: ${{ env.DATE }}
+          - 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - 打包ci名: ${{ github.workflow }}
+          - 开启特性: openssl/webrtc/ffmpeg 
+          - 说明: 本二进制在Windows(x64)上编译，已开启硬件编解码
+          "@
+          $release_info | Set-Content -Path "release.txt" -Encoding UTF8
+
+      - name: 创建 Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        with:
+          release_name: ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}
+          draft: false
+          tag_name:  ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}_${{ env.DATE2 }}
+          commitish: e80e47883bf11da857746c86c99acb92e900b917
+          prerelease: false
+          owner: xia-chu
+          body_path: release.txt
+          repo: zlmediakit-pro
+
+      - name: 上传文件到 Release
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release.zip
+          asset_name: ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}.zip
+          asset_content_type: application/zip
+
+      - name: 输出发布的文件下载链接
+        run: |
+          echo "Release URL: ${{ steps.create_release.outputs.html_url }}"
