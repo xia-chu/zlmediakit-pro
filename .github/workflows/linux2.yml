@@ -245,8 +245,8 @@ jobs:
             cd ..
             rm -rf release/linux/Release/*.a
             mkdir -p release/linux/Release/lib
-            cp -rf /root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/* release/linux/Release/lib
-            cp -rf /root/3rdpart/vcpkg/installed/x64-linux-dynamic/tools/ffmpeg/* release/linux/Release
+            cp -rfP /root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/* release/linux/Release/lib
+            cp -rfP /root/3rdpart/vcpkg/installed/x64-linux-dynamic/tools/ffmpeg/* release/linux/Release
 
           "
       - name: 设置环境变量
@@ -254,7 +254,7 @@ jobs:
           echo "TAG=$(echo ${{ env.BRANCH }} | tr -s "/\?%*:|\"<>" "_")" >> $GITHUB_ENV  
           echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
           echo "DATE2=$(date +%s)" >> $GITHUB_ENV
-          zip -r release.zip release/linux/
+          tar -czf release.tar.gz -C release/linux .
 
       - name: 发布信息
         run: |
@@ -289,7 +289,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release.zip
+          asset_path: release.tar.gz
           asset_name: ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}.zip
           asset_content_type: application/zip
 
