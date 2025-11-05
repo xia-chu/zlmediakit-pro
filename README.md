@@ -33,6 +33,7 @@
   - 6、支持负载过高时，转码主动降低帧率且不花屏。
   - 7、支持滤镜，支持添加osd文本以及logo角标等能力。
   - 8、支持全GPU硬件编解码与滤镜，防止显存与内存频繁拷贝。
+  - 9、对ffmpeg二次开发，支持g722.1，svac私有解码器。
     
 - JT1078部标版本
   - 1、支持接收jt1078推流转其他协议；自适应音视频共享seq和单独seq模式。
@@ -70,15 +71,15 @@
 二进制包分为:
 - Linux版本:
   
-  centos7上编译，支持svac、g722.1自定义解码器，vcpkg编译依赖项，支持cuda、qsv、amf、aom、opencl、openh264、vpx、vulkan等编解码器，其支持s3云存储，功能全面。
+  centos7上编译，支持svac、g722.1自定义解码器，vcpkg编译依赖项，支持cuda、qsv、amf、aom、opencl、openh264、vpx、vulkan等编解码器，支持s3云存储，功能全面。
   
 - Windows版本:
   
-  支持特性全面，vcpkg编译依赖项，支持cuda、qsv、amf、aom、dav1d、opencl、openh264、vpx、vulkan等编解码器，其支持s3云存储，功能全面。
+  支持特性全面，vcpkg编译依赖项，支持cuda、qsv、amf、aom、dav1d、opencl、openh264、vpx、vulkan等编解码器，支持s3云存储，功能全面。
 
 
 ## docker下载
-docker暂未支持s3云存储：
+docker支持x86_64和arm64平台，支持硬件编解码器，支持s3云存储，功能全面。
 ```bash
 docker pull zlmediakit/zlmediakit-pro:feature_all
 ```
