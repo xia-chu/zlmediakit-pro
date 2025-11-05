@@ -4,9 +4,6 @@ on:
   issue_comment:
     types: [ created ]  # 监听 issue 评论创建事件
 
-env:
-  RELEASE: OFF
-
 jobs:
   build:
     runs-on: windows-2022
@@ -66,15 +63,6 @@ jobs:
         run: |
           $hash = git log -1 --format="%H"
           Add-Content -Path $env:GITHUB_ENV -Value "HASH=$hash"
-
-      - name: 查询是否是试用版本
-        run: |
-          if (Select-String -Path "CMakeLists.txt" -Pattern "RELEASE_VERSION" -Quiet) {
-              echo "存在试用版本开关"
-          } else {
-              echo "试用版本开关不存在, 中断编译!"
-              exit 1
-          }
 
       - name: 下载submodule源码
         run: |

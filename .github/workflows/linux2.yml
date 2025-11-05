@@ -4,9 +4,6 @@ on:
   issue_comment:
     types: [ created ]  # 监听 issue 评论创建事件
 
-env:
-  RELEASE: OFF
-
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -73,15 +70,6 @@ jobs:
       - name: 获取git hash
         run: |
           echo "HASH=$(git log -1 --format='%H')" >> $GITHUB_ENV
-
-      - name: 查询是否是试用版本
-        run: |
-          if grep -q "RELEASE_VERSION" CMakeLists.txt; then
-            echo "存在试用版本开关"
-          else
-            echo "试用版本开关不存在, 中断编译!"
-            exit 1
-          fi
 
       - name: 下载submodule源码
         run: mv -f .gitmodules_github .gitmodules && git submodule sync && git submodule update --init
@@ -245,7 +233,6 @@ jobs:
             cd build
             cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
-            -DRELEASE_VERSION=ON \
             -DENABLE_WEBRTC=ON \
             -DENABLE_FFMPEG=ON \
             -DENABLE_TESTS=OFF \
