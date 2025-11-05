@@ -8,6 +8,9 @@
 ## 联系方式
 - 邮箱：1213642868@qq.com
 
+## 注意事项
+zlmediakit pro不提供源码授权，只提供二进制使用授权，用户正式商用需要采购激活码。
+
 ## 怎么开启专业版功能？
 - 下载程序：
   点击[下载链接](https://github.com/xia-chu/zlmediakit-pro/releases), 选择您试用系统对应的程序包。
@@ -27,7 +30,7 @@
 
 
 ## 功能介绍
-- 音视频转码功能
+- 音视频转码
   - 1、音视频间任意转码(包括h265/h264/opus/g711/aac/g722/g722.1/mp3/svac/vp8/vp9/av1等。
   - 2、基于配置文件的转码，支持设置比特率，codec类型等参数。
   - 3、基于http api的动态增减转码，支持设置比特率，分辨率倍数，codec类型、滤镜等参数。
@@ -38,13 +41,13 @@
   - 8、支持全GPU硬件编解码与滤镜，防止显存与内存频繁拷贝。
   - 9、对ffmpeg二次开发，支持g722.1，svac私有解码器。
     
-- JT1078部标版本
+- JT1078部标
   - 1、支持接收jt1078推流转其他协议；自适应音视频共享seq和单独seq模式。
   - 2、支持jt1078级联，支持jt1078对讲。
   - 3、jt1078相关接口、端口和用法与GB28181用法一致，保持兼容。
   - 4、支持h264/h265/g711/aac/mp3/g721/g722/g723/g729/g726/adpcm等编码。
 
-- IPTV版本
+- IPTV
   - 1、支持rtsp-ts/hls/http-ts/rtp组播/udp组播拉流转协议，支持ts透传模式，无需解复用转rtsp-ts/hls/http-ts/srt协议。
   - 2、支持接收rtsp-ts/srt/rtp-ts推流，支持ts透传模式，无需解复用转rtsp-ts/hls/http-ts/srt协议。
   - 3、上述功能同时支持解复用ts为es流再转rtsp/rtmp/flv/http-ts/hls/hls-fmp4/mp4/fmp4/webrtc等协议。
