@@ -124,7 +124,4 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }}
           file: ./dockerfile
-          build-args: |
-            MODEL=Release
-            RELEASE_VERSION=${{ env.RELEASE }}
           platforms: linux/amd64,linux/arm64
