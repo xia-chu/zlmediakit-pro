@@ -88,3 +88,11 @@ docker支持x86_64和arm64平台，支持硬件编解码器，支持s3云存储�
 ```bash
 docker pull zlmediakit/zlmediakit-pro:feature_all
 ```
+
+
+## 更新记录
+- 2025-11-7
+  - 新增支持mp4录制内存流写入s3云存储，支持从s3云存储加载mp4文件点播为rtsp/rtmp/flv/webrtc等协议。
+  - 新增支持截图写入云存储，并从云存储加载截图。
+  - deleteRecordDirectory/deleteSnapDirectory/getMP4RecordFile/getSnap接口支持云存储。
+  - 采用缓存机制优化云存储读写性能，降低读写请求qps。
