@@ -56,6 +56,9 @@ zlmediakit pro不提供源码授权，只提供二进制使用授权，用户正
   - 支持s3/minio云存储内存流直接写入，解决录像文件io系统瓶颈问题
   - 支持直接通过zlmediakit的http服务下载和点播云存储文件。
   - 支持遍历云存储文件并生成http菜单网页。
+  - s3云存储读写全内存流方式，不经过磁盘，无磁盘io瓶颈。
+  - 支持mp4/hls录制至云存储，支持从云存储点播mp4为rtsp/rtmp/flv/webrtc等协议。
+  - 绝大部分文件都支持云存储读写。
  
 - WebRTC集群
   - 支持rtc流量代理，解决k8s部署zlmediakit webrtc服务时，http信令交互与rtc流量打不到同一个pod实例的问题。
