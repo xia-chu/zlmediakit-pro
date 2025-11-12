@@ -1,0 +1,185 @@
+name: macOS_onnx
+
+on:
+  issue_comment:
+    types: [ created ]
+
+jobs:
+  build:
+    runs-on: macos-14  # Apple Silicon macOS Runner
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
+    steps:
+      - name: 打印 issue 评论信息
+        run: |
+          echo "issue number :${{ github.event.issue.number }}"
+          echo "issue 作者 :${{ github.event.comment.user.login }}"
+
+      - name: 过滤 issue 评论
+        if: github.event.issue.number != 1 || github.event.comment.user.login != 'xia-chu'
+        run: exit 1
+
+      - name: 获取分支和 ci 名
+        run: |
+          set -x
+          input_string="${{ github.event.comment.body }}"
+          IFS=' ' read -r branch_name ci_name <<< "$input_string"
+
+          echo "分支: $branch_name"
+          echo "ci名: $ci_name"
+
+          echo "BRANCH=$branch_name" >> $GITHUB_ENV
+          if [ "$ci_name" != "${{ github.workflow }}" ]; then
+              echo "ci不匹配"
+              exit 1
+          fi
+
+      - name: 下载源码
+        uses: actions/checkout@v2
+        with:
+          repository: xia-chu/zlmediakit-promax
+          fetch-depth: 1
+          ref: ${{ env.BRANCH }}
+          token: ${{ secrets.ACCESS_TOKEN }}
+          path: .
+
+      - name: 下载ai插件源码
+        uses: actions/checkout@v2
+        with:
+          repository: xia-chu/yolov8_trt
+          fetch-depth: 1
+          ref: onnx
+          token: ${{ secrets.ACCESS_TOKEN }}
+          path: 3rdpart/yolov8_trt
+
+      - name: 下载onnxruntime源码
+        uses: actions/checkout@v2
+        with:
+          repository: microsoft/onnxruntime
+          fetch-depth: 1
+          ref: v1.23.2
+          path: 3rdpart/onnxruntime
+
+      - name: 获取 git hash
+        run: |
+          hash=$(git log -1 --format="%H")
+          echo "HASH=$hash" >> $GITHUB_ENV
+
+      - name: 下载 submodule 源码
+        run: |
+          mv .gitmodules_github .gitmodules
+          git submodule sync
+          git submodule update --init
+          rm -f tests/*.cpp api/tests/*.c
+          cd 3rdpart/yolov8_trt
+          git submodule update --init
+
+      - name: 安装依赖工具
+        run: |
+          brew update
+          brew install nasm autoconf autoconf-archive automake libtool cmake python@3.11 wget
+
+      - name: Build ONNX Runtime with CoreML
+        run: |
+          cd 3rdpart/onnxruntime/
+          sh ./build.sh  --skip_tests --build_shared_lib --use_coreml --parallel $(sysctl -n hw.ncpu) --config Release --cmake_extra_defines CMAKE_POLICY_VERSION_MINIMUM=3.5
+          cd build/MacOS/Release/
+          sudo make install
+          echo "ONNXRUNTIME_ROOT=/usr/local/" >> $GITHUB_ENV
+
+      - name: 配置 vcpkg
+        uses: lukka/run-vcpkg@v7
+        with:
+          vcpkgDirectory: '${{github.workspace}}/vcpkg'
+          vcpkgTriplet: arm64-osx-release
+          vcpkgGitCommitId: 'e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb'
+          vcpkgArguments: 'eigen3 openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,aom,openh264,vpx] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] opencv[contrib,core,dnn,freetype]'
+
+      - name: 检查并设置 Python 3.11
+        run: |
+          PYTHON_ROOT=$(python3.11 -c "import sys; print(sys.prefix)")
+          echo "PYTHON_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
+          PYTHON_EXECUTABLE=$(which python3.11)
+          echo "PYTHON_EXECUTABLE=$PYTHON_EXECUTABLE" >> $GITHUB_ENV
+
+      - name: 编译
+        uses: lukka/run-cmake@v3
+        with:
+          useVcpkgToolchainFile: true
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          buildDirectory: '${{github.workspace}}/build'
+          cmakeAppendedArgs: '-DPYTHON_EXECUTABLE=${{ env.PYTHON_EXECUTABLE }} -DENABLE_ONNX=ON -DONNXRUNTIME_PATH_ROOT=${{ env.ONNXRUNTIME_ROOT }} -DBUILD_SHARED_LIBS=off -DENABLE_AI=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DENABLE_FFMPEG=ON -DENABLE_API=OFF -DENABLE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release'
+
+      - name: 设置环境变量与打包
+        run: |
+          tag="${{ env.BRANCH }}"
+          tag="${tag//[\/\?\%\*\:\|\"<>]/_}"
+          echo "TAG=$tag" >> $GITHUB_ENV
+
+          date=$(date +%Y-%m-%d)
+          echo "DATE=$date" >> $GITHUB_ENV
+
+          date2=$(date +%s)
+          echo "DATE2=$date2" >> $GITHUB_ENV
+
+          rm -f release/darwin/Release/*.a 
+          mkdir -p release/darwin/Release
+          mkdir -p release/darwin/Release/models 
+          mkdir -p release/darwin/Release/lib
+          mkdir -p release/darwin/Release/conf
+
+          cp -rf conf/* release/darwin/Release/conf
+          cp -rfP ${{github.workspace}}/vcpkg/installed/arm64-osx-release/lib/* release/darwin/Release/lib
+          cp -rfP ${{ env.ONNXRUNTIME_ROOT }}/lib/libonnxruntime* release/darwin/Release/lib
+          cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/darwin/Release/models/
+          cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/darwin/Release/
+          
+          rm -rf release/darwin/Release/lib/*.a
+
+          cd release/darwin
+          tar -czf ../../release.tar.gz Release
+          cd -
+
+      - name: 发布信息
+        run: |
+          cat <<EOF > release.txt
+          - 分支: ${{ env.BRANCH }}
+          - git hash: ${{ env.HASH }}
+          - 编译日期: ${{ env.DATE }}
+          - 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - 打包 ci 名: ${{ github.workflow }}
+          - 说明: 本二进制在 macOS (arm64) 上编译，启用 VideoToolbox 硬件加速, 启用onnxruntime(coreml) ai推理, 本程序依赖python3.14, 运行前请brew install python@3.14安装
+          EOF
+
+      - name: 创建 Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        with:
+          release_name: ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}
+          draft: false
+          tag_name:  ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}_${{ env.DATE2 }}
+          commitish: e80e47883bf11da857746c86c99acb92e900b917
+          prerelease: false
+          owner: xia-chu
+          body_path: release.txt
+          repo: zlmediakit-pro
+
+      - name: 上传文件到 Release
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release.tar.gz
+          asset_name: ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: 输出发布的文件下载链接
+        run: |
+          echo "Release URL: ${{ steps.create_release.outputs.html_url }}"
