@@ -345,7 +345,7 @@ jobs:
             make install > /dev/null 2>&1
             cd ../../../
         
-            export PKG_CONFIG_PATH=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig:/root/install/lib/pkgconfig
+            export PKG_CONFIG_PATH=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig:/root/install/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig
             export PKG_CONFIG_LIBDIR=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig
             export LD_LIBRARY_PATH=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib:$LD_LIBRARY_PATH
             export CFLAGS='-I/root/3rdpart/vcpkg/installed/x64-linux-dynamic/include -I/root/install/include -I/root/3rdpart/fuck_svac/sdk -fPIC'
@@ -407,7 +407,7 @@ jobs:
             cp -rfP /root/3rdpart/fuck_svac/sdk/* release/linux/Release/lib/
             cp -rfP /root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/* release/linux/Release/lib
             cp -rf conf/* release/linux/Release/conf 
-            cp -rfP /usr/local/lib/libonnxruntime* release/linux/Release/lib
+            cp -rfP /usr/local/lib64/libonnxruntime* release/linux/Release/lib
             cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/
             cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
             rm -rf release/darwin/Release/lib/*.a
