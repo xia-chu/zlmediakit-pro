@@ -1,0 +1,196 @@
+name: Linux_onnx2
+
+on:
+  issue_comment:
+    types: [ created ]  # 监听 issue 评论创建事件
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  USER_NAME: zlmediakit
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+      - name: 打印issue评论信息
+        run: |
+          echo "issue number :${{ github.event.issue.number }}"
+          echo "issue 作者 :${{ github.event.comment.user.login }}"
+
+      - name: 过滤issue评论
+        if: github.event.issue.number != 1 || github.event.comment.user.login != 'xia-chu'
+        run: exit 1
+
+      - name: 获取分支和ci名
+        run: |
+          #!/bin/bash
+          set -x
+          input_string="${{ github.event.comment.body }}"
+          
+          # Split into lines and trim each line
+          IFS=' ' read -r -a lines <<< "$input_string"
+          
+          for (( i=0; i<${#lines[@]}; i++ )); do
+            trimmed_line=$(echo "${lines[i]}" | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+            lines[i]="$trimmed_line"
+          done
+          
+          for (( i=0; i<${#lines[@]}; i++ )); do
+            if [ "$i" -eq 0 ]; then
+              echo "分支: ${lines[i]}"
+              echo "BRANCH=${lines[i]}" >> $GITHUB_ENV
+            elif [ "$i" -eq 1 ]; then
+              echo "ci名: ${lines[i]}"
+              if [ "${lines[i]}" != "${{ github.workflow }}" ]; then
+                echo "ci不匹配"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: 下载源码
+        uses: actions/checkout@v2
+        with:
+          repository: xia-chu/zlmediakit-promax
+          fetch-depth: 1
+          ref: ${{ env.BRANCH }}
+          token: ${{ secrets.ACCESS_TOKEN }}
+          path: .
+
+      - name: 下载ai插件源码
+        uses: actions/checkout@v2
+        with:
+          repository: xia-chu/yolov8_trt
+          fetch-depth: 1
+          ref: onnx
+          token: ${{ secrets.ACCESS_TOKEN }}
+          path: 3rdpart/yolov8_trt
+
+      - name: 获取git hash
+        run: |
+          echo "HASH=$(git log -1 --format='%H')" >> $GITHUB_ENV
+
+      - name: 下载 submodule 源码
+        run: |
+          mv .gitmodules_github .gitmodules
+          git submodule sync
+          git submodule update --init
+          rm -f tests/*.cpp api/tests/*.c
+          cd 3rdpart/yolov8_trt
+          git submodule update --init
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.USER_NAME }}
+          password: ${{ secrets.DOCKER_IO_SECRET }}
+
+      - name: 启动 Docker 容器, 在Docker 容器中执行脚本
+        run: |
+          docker pull zlmediakit/zlm_dev:linux_onnx
+          docker run -v $(pwd):/root/git -w /root/git --rm zlmediakit/zlm_dev:linux_onnx sh -c "
+            #!/bin/bash
+            set -x
+          
+            export PATH="/root/miniconda/bin:$PATH"
+            source "/root/miniconda/etc/profile.d/conda.sh"
+            conda activate py11
+            python --version
+          
+            source /opt/rh/devtoolset-11/enable
+            gcc --version
+            
+            export PKG_CONFIG_PATH=/root/src/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig/:/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig/
+            mkdir -p build
+            cd build
+            cmake .. \
+            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DPYTHON_EXECUTABLE=$(which python3.11) \
+            -DENABLE_ONNX=ON \
+            -DOpenCV_ROOT=/root/src/vcpkg/installed/x64-linux-dynamic/share/opencv4 \
+            -DONNXRUNTIME_PATH_ROOT=/usr/local/ \
+            -DBUILD_SHARED_LIBS=off \
+            -DENABLE_AI=ON \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_WEBRTC=ON \
+            -DENABLE_FFMPEG=ON \
+            -DENABLE_TESTS=OFF \
+            -DENABLE_API=OFF \
+            -DENABLE_SVAC=ON \
+            -DENABLE_G722_1=ON \
+            -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic \
+            -DCMAKE_TOOLCHAIN_FILE=/root/src/vcpkg/scripts/buildsystems/vcpkg.cmake
+          
+            make -j $(nproc)
+          
+            cd ..
+            rm -rf release/linux/Release/*.a
+            mkdir -p release/linux/Release/lib
+            mkdir -p release/linux/Release/models 
+            mkdir -p release/linux/Release/conf
+          
+            cp -rfP /root/src/svac/* release/linux/Release/lib/
+            cp -rfP /root/src/vcpkg/installed/x64-linux-dynamic/lib/* release/linux/Release/lib
+            cp -rf conf/* release/linux/Release/conf 
+            cp -rfP /usr/local/lib64/libonnxruntime* release/linux/Release/lib
+            cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/
+            cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
+            rm -rf release/linux/Release/lib/*.a
+
+          "
+
+      - name: 设置环境变量
+        run: |
+          echo "TAG=$(echo ${{ env.BRANCH }} | tr -s "/\?%*:|\"<>" "_")" >> $GITHUB_ENV  
+          echo "DATE=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+          echo "DATE2=$(date +%s)" >> $GITHUB_ENV
+          tar -czf release.tar.gz -C release/linux .
+
+      - name: 发布信息
+        run: |
+          cat <<EOF > release.txt
+          - 分支: ${{ env.BRANCH }}
+          - git hash: ${{ env.HASH }}
+          - 编译日期: ${{ env.DATE }}
+          - 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - 打包 ci 名: ${{ github.workflow }}
+          - 说明: 本二进制在 centos7(x64) 上编译，已开启硬件编解码，支持svac,g722.1自定义解码器, 开启onnxruntime(cpu) ai推理, 本程序依赖python3.11, 运行前请miniconda安装python3.11
+          EOF
+
+      - name: 创建 Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        with:
+          release_name: ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}
+          draft: false
+          tag_name:  ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}_${{ env.DATE2 }}
+          commitish: e80e47883bf11da857746c86c99acb92e900b917
+          prerelease: false
+          owner: xia-chu
+          body_path: release.txt
+          repo: zlmediakit-pro
+
+      - name: 上传文件到 Release
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release.tar.gz
+          asset_name: ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}.tar.gz
+          asset_content_type: application/gzip
+
+      - name: 输出发布的文件下载链接
+        run: |
+          echo "Release URL: ${{ steps.create_release.outputs.html_url }}"

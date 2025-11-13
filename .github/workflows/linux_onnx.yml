@@ -402,7 +402,7 @@ jobs:
             mkdir -p release/linux/Release/bin
             mkdir -p release/linux/Release/lib
             mkdir -p release/linux/Release/models 
-            mkdir -p release/darwin/Release/conf
+            mkdir -p release/linux/Release/conf
           
             cp -rfP /root/3rdpart/fuck_svac/sdk/* release/linux/Release/lib/
             cp -rfP /root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/* release/linux/Release/lib
@@ -410,7 +410,7 @@ jobs:
             cp -rfP /usr/local/lib64/libonnxruntime* release/linux/Release/lib
             cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/
             cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
-            rm -rf release/darwin/Release/lib/*.a
+            rm -rf release/linux/Release/lib/*.a
 
           "
 
@@ -430,7 +430,7 @@ jobs:
           - 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           - 打包 ci 名: ${{ github.workflow }}
           - 说明: 本二进制在 centos7(x64) 上编译，已开启硬件编解码，支持svac,g722.1自定义解码器, 开启onnxruntime(cpu) ai推理, 本程序依赖python3.11, 运行前请miniconda安装python3.11
-          EOF 
+          EOF
 
       - name: 创建 Release
         id: create_release
