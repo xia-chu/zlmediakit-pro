@@ -83,11 +83,26 @@ zlmediakit pro不提供源码授权，只提供二进制使用授权，用户正
 - Linux版本:
   
   centos7上编译，支持svac、g722.1自定义解码器，vcpkg编译依赖项，支持cuda、qsv、amf、aom、opencl、openh264、vpx、vulkan等编解码器，支持s3云存储，功能全面。
+
+- Linux onnx版本：
+  
+  和Linux普通版本相比增加onnx cpu推理功能，依赖python运行环境，需要先miniconda安装python3.11才能启动。
   
 - Windows版本:
   
   支持特性全面，vcpkg编译依赖项，支持cuda、qsv、amf、aom、dav1d、opencl、openh264、vpx、vulkan等编解码器，支持s3云存储，功能全面。
 
+- Windows onnx版本:
+  
+  和Windows普通版本相比增加onnx cuda推理功能，依赖python运行环境，依赖cuda和cudnn环境。
+
+- macOS版本：
+  
+  支持aom、openh264、vpx、videotoolbox等编解码器，支持s3云存储，功能全面。
+
+- macOS onnx版本：
+  
+  和macOS普通版本相比增加onnx coreml推理功能，依赖python运行环境，需要先brew install python@3.14才能启动。
 
 ## docker下载
 docker支持x86_64和arm64平台，支持硬件编解码器，支持s3云存储，功能全面。
