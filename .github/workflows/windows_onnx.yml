@@ -101,7 +101,7 @@ jobs:
         uses: lukka/run-vcpkg@v7
         with:
           vcpkgDirectory: '${{github.workspace}}/vcpkg'
-          vcpkgTriplet: x64-windows-release
+          vcpkgTriplet: x64-windows
           # 2025.11.2
           vcpkgGitCommitId: 'e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb'
           vcpkgArguments: 'pkgconf eigen3 openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,nvcodec,qsv,amf,aom,dav1d,opencl,opengl,openh264,vpx,vulkan] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] opencv4[contrib,core,dnn,freetype] onnxruntime-gpu'
@@ -113,7 +113,7 @@ jobs:
           cmakeBuildType: Release
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           buildDirectory: '${{github.workspace}}/build'
-          cmakeAppendedArgs: '-DVCPKG_TARGET_TRIPLET=x64-windows-release -DPYTHON_EXECUTABLE=${{ env.PYTHON_EXECUTABLE }} -DENABLE_ONNX=ON -DONNXRUNTIME_PATH_ROOT=${{github.workspace}}\vcpkg\installed\x64-windows-release\ -DBUILD_SHARED_LIBS=off -DENABLE_AI=ON -DENABLE_FFMPEG=ON -DENABLE_API=OFF -DENABLE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release'
+          cmakeAppendedArgs: '-DVCPKG_TARGET_TRIPLET=x64-windows -DPYTHON_EXECUTABLE=${{ env.PYTHON_EXECUTABLE }} -DENABLE_ONNX=ON -DONNXRUNTIME_PATH_ROOT=${{github.workspace}}\vcpkg\installed\x64-windows\ -DBUILD_SHARED_LIBS=off -DENABLE_AI=ON -DENABLE_FFMPEG=ON -DENABLE_API=OFF -DENABLE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release'
 
       - name: 设置环境变量
         run: |
@@ -137,9 +137,9 @@ jobs:
           New-Item -ItemType Directory -Force -Path "release\windows\Release\python"
           New-Item -ItemType Directory -Force -Path "release\windows\Release\conf"
           
-          Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows-release\tools\ffmpeg\*" -Destination "release\windows\Release" -Force
-          Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows-release\lib\*" -Destination "release\windows\Release" -Force
-          Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows-release\bin\*" -Destination "release\windows\Release" -Force
+          Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows\tools\ffmpeg\*" -Destination "release\windows\Release" -Force
+          Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows\lib\*" -Destination "release\windows\Release" -Force
+          Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows\bin\*" -Destination "release\windows\Release" -Force
           
           Copy-Item -Path "conf\*" -Destination "release\windows\Release\conf" -Recurse -Force
           Copy-Item -Path "3rdpart\yolov8_trt\cpp\detect\onnx_model\*" -Destination "release\windows\Release\models" -Recurse -Force
