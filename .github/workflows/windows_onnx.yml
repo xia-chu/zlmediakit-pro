@@ -104,35 +104,7 @@ jobs:
           vcpkgTriplet: x64-windows
           # 2025.11.2
           vcpkgGitCommitId: 'e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb'
-          vcpkgArguments: 'pkgconf eigen3 openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,nvcodec,qsv,amf,aom,dav1d,opencl,opengl,openh264,vpx,vulkan] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] opencv4[contrib,core,dnn,freetype]'
-
-      - name: 下载 onnxruntime GPU 预编译包
-        shell: pwsh
-        run: |
-          $url = "https://github.com/microsoft/onnxruntime/releases/download/v1.23.2/onnxruntime-win-x64-gpu-1.23.2.zip"
-          $zip = "onnxruntime.zip"
-          Invoke-WebRequest -Uri $url -OutFile $zip
-          Expand-Archive -Path $zip -DestinationPath "onnxruntime" -Force
-
-      - name: 安装 onnxruntime 到 vcpkg 目录结构
-        shell: pwsh
-        run: |
-          $ortRoot = Join-Path $PWD "onnxruntime\onnxruntime-win-x64-gpu-1.23.2"
-          $vcpkgRoot = Join-Path $PWD "vcpkg\installed\x64-windows"
-
-          # 创建必要目录
-          New-Item -ItemType Directory -Force -Path "$vcpkgRoot\bin" | Out-Null
-          New-Item -ItemType Directory -Force -Path "$vcpkgRoot\lib" | Out-Null
-          New-Item -ItemType Directory -Force -Path "$vcpkgRoot\include" | Out-Null
-
-          # 拷贝 runtime 和 lib
-          Copy-Item -Path "$ortRoot\lib\*" -Destination "$vcpkgRoot\lib" -Force
-          Copy-Item -Path "$ortRoot\bin\*" -Destination "$vcpkgRoot\bin" -Force
-
-          # 拷贝 include 目录
-          Copy-Item -Path "$ortRoot\include\*" -Destination "$vcpkgRoot\include" -Recurse -Force
-
-          echo "onnxruntime 安装完成"
+          vcpkgArguments: 'pkgconf eigen3 openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,nvcodec,qsv,amf,aom,dav1d,opencl,opengl,openh264,vpx,vulkan] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] opencv4[contrib,core,dnn,freetype] onnxruntime-gpu'
 
       - name: 编译
         uses: lukka/run-cmake@v3
