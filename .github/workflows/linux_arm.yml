@@ -88,7 +88,7 @@ jobs:
           
             yum update -y -q
             update-ca-trust
-            yum install -y -q git wget gcc gcc-c++ nasm cmake diffutils make automake libtool autoconf-archive perl m4 kernel-devel kernel-headers
+            yum install -y -q git wget gcc gcc-c++ nasm diffutils make automake libtool autoconf-archive perl m4 kernel-devel kernel-headers
             
             wget https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.gz > /dev/null 2>&1
             tar xf autoconf-2.72.tar.gz > /dev/null 2>&1
@@ -98,6 +98,12 @@ jobs:
             make install
             cd ..
             rm -rf autoconf-2.72*
+          
+            wget -q https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-aarch64.tar.gz  > /dev/null 2>&1
+            tar -xzf cmake-3.31.9-linux-aarch64.tar.gz  > /dev/null 2>&1
+            mv cmake-3.31.9-linux-aarch64 /usr/local/cmake-3.31.9
+            ln -s /usr/local/cmake-3.31.9/bin/* /usr/local/bin/
+            rm -rf cmake-3.31.9-linux-aarch64*
           
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
