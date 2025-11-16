@@ -113,7 +113,7 @@ jobs:
           cmakeBuildType: Release
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           buildDirectory: '${{github.workspace}}/build'
-          cmakeAppendedArgs: '-DVCPKG_TARGET_TRIPLET=x64-windows-release -DPYTHON_EXECUTABLE=${{ env.PYTHON_EXECUTABLE }} -DENABLE_ONNX=ON -DONNXRUNTIME_PATH_ROOT=${{github.workspace}}\vcpkg\installed\x64-windows-release\ -DBUILD_SHARED_LIBS=off -DENABLE_AI=ON -DENABLE_FFMPEG=ON -DENABLE_API=OFF -DENABLE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release'
+          cmakeAppendedArgs: '-DVCPKG_BUILD_TYPE=release -DVCPKG_TARGET_TRIPLET=x64-windows-release -DPYTHON_EXECUTABLE=${{ env.PYTHON_EXECUTABLE }} -DENABLE_ONNX=ON -DONNXRUNTIME_PATH_ROOT=${{github.workspace}}\vcpkg\installed\x64-windows-release\ -DBUILD_SHARED_LIBS=off -DENABLE_AI=ON -DENABLE_FFMPEG=ON -DENABLE_API=OFF -DENABLE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release'
 
       - name: 设置环境变量
         run: |
