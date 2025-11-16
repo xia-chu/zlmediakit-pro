@@ -102,7 +102,7 @@ jobs:
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
           
-            VCPKG_BUILD_TYPE=release ./vcpkg install jemalloc openssl libsrtp\[openssl\] harfbuzz freetype fribidi fontconfig x264 x265 openh264 opus aws-crt-cpp ffmpeg\[ffmpeg,nonfree,x264,x265,opus,mp3lame,freetype,fribidi,fontconfig,drawtext,opencl,openh264,vpx,vulkan\] aws-sdk-cpp\[core,s3,transfer\] --triplet arm64-linux-dynamic
+            VCPKG_BUILD_TYPE=release ./vcpkg install jemalloc openssl libsrtp\[openssl\] harfbuzz freetype fribidi fontconfig x264 openh264 opus aws-crt-cpp ffmpeg\[ffmpeg,nonfree,x264,opus,mp3lame,freetype,fribidi,fontconfig,drawtext,opencl,openh264,vpx\] aws-sdk-cpp\[core,s3,transfer\] --triplet arm64-linux-dynamic
             cd ../../
 
             mkdir -p build
@@ -143,7 +143,7 @@ jobs:
           release_info+="- 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n"
           release_info+="- 打包ci名: ${{ github.workflow }}\n"
           release_info+="- 开启特性: openssl/webrtc/datachannel/ffmpeg \n"
-          release_info+="- 说明: 本二进制在kylinv10(arm64)上编译，未开启ai推理，其他功能已全部开启\n"
+          release_info+="- 说明: 本二进制在kylinv10(arm64)上编译，未开启ai推理与x265编码器，其他功能已全部开启\n"
           echo -e "$release_info" >> release.txt
 
       - name: 创建 Release
