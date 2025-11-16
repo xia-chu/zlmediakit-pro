@@ -1,8 +1,12 @@
-name: LinuxARM
+name: LinuxARM2
 
 on:
   issue_comment:
     types: [ created ]  # 监听 issue 评论创建事件
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  USER_NAME: zlmediakit
 
 jobs:
   build:
@@ -79,32 +83,20 @@ jobs:
       - name: 设置QEMU
         uses: docker/setup-qemu-action@v3
 
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.USER_NAME }}
+          password: ${{ secrets.DOCKER_IO_SECRET }}
+          
       - name: 启动 Docker 容器, 在Docker 容器中执行脚本
         run: |
-          docker pull --platform linux/arm64 opstool/kylin:v10sp1-aarch64
-          docker run --platform linux/arm64 -v $(pwd):/root -w /root --rm opstool/kylin:v10sp1-aarch64  sh -c "
+          docker pull --platform linux/arm64 zlmediakit/zlm_dev:linux_arm
+          docker run --platform linux/arm64 -v $(pwd):/root/src -w /root/src --rm zlmediakit/zlm_dev:linux_arm  sh -c "
             #!/bin/bash
             set -x
           
-            yum update -y -q
-            update-ca-trust
-            yum install -y -q git wget gcc gcc-c++ nasm cmake diffutils make automake libtool autoconf-archive perl m4 kernel-devel kernel-headers
-            
-            wget https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.gz > /dev/null 2>&1
-            tar xf autoconf-2.72.tar.gz > /dev/null 2>&1
-            cd autoconf-2.72
-            ./configure --prefix=/usr > /dev/null 2>&1
-            make -j$(nproc) > /dev/null 2>&1
-            make install
-            cd ..
-            rm -rf autoconf-2.72*
-          
-            cd 3rdpart/vcpkg
-            ./bootstrap-vcpkg.sh
-          
-            VCPKG_BUILD_TYPE=release ./vcpkg install jemalloc openssl libsrtp\[openssl\] harfbuzz freetype fribidi fontconfig x264 openh264 opus aws-crt-cpp ffmpeg\[ffmpeg,nonfree,x264,opus,mp3lame,freetype,fribidi,fontconfig,drawtext,opencl,openh264,vpx\] aws-sdk-cpp\[core,s3,transfer\] --triplet arm64-linux-dynamic
-            cd ../../
-
             mkdir -p build
             cd build
             cmake .. \
@@ -114,7 +106,7 @@ jobs:
             -DENABLE_TESTS=OFF \
             -DENABLE_API=OFF \
             -DVCPKG_TARGET_TRIPLET=arm64-linux-dynamic \
-            -DCMAKE_TOOLCHAIN_FILE=/root/3rdpart/vcpkg/scripts/buildsystems/vcpkg.cmake
+            -DCMAKE_TOOLCHAIN_FILE=/root/vcpkg/scripts/buildsystems/vcpkg.cmake
 
             make -j $(nproc)
 
@@ -123,7 +115,7 @@ jobs:
             mkdir -p release/linux/Release/lib
             mkdir -p release/linux/Release/conf
           
-            cp -rfP /root/3rdpart/vcpkg/installed/arm64-linux-dynamic/lib/* release/linux/Release/lib
+            cp -rfP /root/vcpkg/installed/arm64-linux-dynamic/lib/* release/linux/Release/lib
             cp -rf conf/* release/linux/Release/conf 
             rm -rf release/linux/Release/lib/*.a
 
