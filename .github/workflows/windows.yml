@@ -85,6 +85,7 @@ jobs:
           useVcpkgToolchainFile: true
           cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
           buildDirectory: '${{github.workspace}}/build'
+          buildWithCMakeArgs: '--config Release'
           cmakeAppendedArgs: '-DENABLE_FFMPEG=ON -DENABLE_API=OFF -DENABLE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release'
 
       - name: 设置环境变量
@@ -102,8 +103,8 @@ jobs:
           Add-Content -Path $env:GITHUB_ENV -Value "DATE2=$date2"
           
           # 压缩 release 目录为 release.zip
-          mv -Force release\windows\Release\Debug\* release\windows\Release
-          Remove-Item -Path release\windows\Release\Debug -Force -Recurse
+          mv -Force release\windows\Release\Release\* release\windows\Release
+          Remove-Item -Path release\windows\Release\Release -Force -Recurse
           Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows-release\tools\ffmpeg\*" -Destination "release\windows\Release" -Force
           Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows-release\lib\*" -Destination "release\windows\Release" -Force
           Copy-Item -Path "${{github.workspace}}\vcpkg\installed\x64-windows-release\bin\*" -Destination "release\windows\Release" -Force

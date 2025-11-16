@@ -27,7 +27,7 @@ jobs:
       - name: 获取分支和ci名
         run: |
           # 启用详细日志
-          $DebugPreference = "Continue"
+          $ReleasePreference = "Continue"
           
           # 获取 GitHub 事件中的评论内容
           $input_string = "${{ github.event.comment.body }}"
@@ -131,8 +131,8 @@ jobs:
           Add-Content -Path $env:GITHUB_ENV -Value "DATE2=$date2"
           
           # 压缩 release 目录为 release.zip
-          mv -Force release\windows\Release\Debug\* release\windows\Release
-          Remove-Item -Path release\windows\Release\Debug -Force -Recurse
+          mv -Force release\windows\Release\Release\* release\windows\Release
+          Remove-Item -Path release\windows\Release\Release -Force -Recurse
           
           New-Item -ItemType Directory -Force -Path "release\windows\Release\models"
           New-Item -ItemType Directory -Force -Path "release\windows\Release\python"
