@@ -85,6 +85,10 @@ zlmediakit pro原则上不提供源码授权，只提供二进制使用授权，
   
   centos7上编译，支持svac、g722.1自定义解码器，vcpkg编译依赖项，支持cuda、qsv、amf、aom、opencl、openh264、vpx、vulkan等编解码器，支持s3云存储，功能全面。
 
+- Linux ARM版本：
+  
+  和Linux普通版本相比功能基本一致，移除了对svac、g722.1自定义解码器的支持，在kylin:v10sp1-aarch64上编译。
+
 - Linux onnx版本：
   
   和Linux普通版本相比增加onnx cpu推理功能，依赖python运行环境，需要先miniconda安装python3.11才能启动。
