@@ -96,6 +96,7 @@ jobs:
           cp -R ${{github.workspace}}/vcpkg/installed/arm64-osx-release/lib/* release/darwin/Release/ 2>/dev/null || true
           cp -R ${{github.workspace}}/vcpkg/installed/arm64-osx-release/bin/* release/darwin/Release/ 2>/dev/null || true
           rm -f release/darwin/Release/*.a
+          rm -rf release/linux/Release/lib/*.a
 
           cd release/darwin
           tar -czf ../../release.tar.gz Release

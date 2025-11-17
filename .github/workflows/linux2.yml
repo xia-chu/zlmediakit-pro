@@ -247,6 +247,7 @@ jobs:
             mkdir -p release/linux/Release/lib
             cp -rfP /root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/* release/linux/Release/lib
             cp -rfP /root/3rdpart/vcpkg/installed/x64-linux-dynamic/tools/ffmpeg/* release/linux/Release
+            rm -rf release/linux/Release/lib/*.a
 
           "
       - name: 设置环境变量
