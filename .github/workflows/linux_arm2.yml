@@ -105,6 +105,7 @@ jobs:
             -DENABLE_FFMPEG=ON \
             -DENABLE_TESTS=OFF \
             -DENABLE_API=OFF \
+            -DENABLE_JEMALLOC=OFF \
             -DVCPKG_TARGET_TRIPLET=arm64-linux-dynamic \
             -DCMAKE_TOOLCHAIN_FILE=/root/vcpkg/scripts/buildsystems/vcpkg.cmake
 
