@@ -69,7 +69,7 @@ jobs:
         with:
           repository: xia-chu/yolov8_trt
           fetch-depth: 1
-          ref: onnx
+          ref: main
           token: ${{ secrets.ACCESS_TOKEN }}
           path: 3rdpart/yolov8_trt
 
