@@ -118,6 +118,12 @@ docker pull zlmediakit/zlmediakit-pro:feature_all
 
 
 ## 更新记录
+- 2025-11-23
+  - linux发行包新增支持G722.1C编码器，支持svac解码，G722.1C编解码。
+  - 解决websocket-flv/fmp4/ts多路播放请求pending问题
+  - 初步添加onvif客户端
+  - 稳定性增强
+  
 - 2025-11-7
   - 新增支持mp4录制内存流写入s3云存储，支持从s3云存储加载mp4文件点播为rtsp/rtmp/flv/webrtc等协议。
   - 新增支持截图写入云存储，并从云存储加载截图。
