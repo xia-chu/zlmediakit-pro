@@ -3,6 +3,10 @@ name: Linux_onnx
 on:
   issue_comment:
     types: [ created ]  # 监听 issue 评论创建事件
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  USER_NAME: zlmediakit
 
 jobs:
   build:
@@ -69,21 +73,6 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           path: 3rdpart/yolov8_trt
 
-      - name: 下载onnxruntime源码
-        uses: actions/checkout@v2
-        with:
-          repository: microsoft/onnxruntime
-          fetch-depth: 1
-          ref: v1.22.1
-          path: 3rdpart/onnxruntime
-
-      - name: 下载stdcpp
-        uses: actions/checkout@v2
-        with:
-          repository: xia-chu/zlmediakit-pro
-          fetch-depth: 1
-          path: 3rdpart/stdcpp
-
       - name: 获取git hash
         run: |
           echo "HASH=$(git log -1 --format='%H')" >> $GITHUB_ENV
@@ -97,287 +86,36 @@ jobs:
           cd 3rdpart/yolov8_trt
           git submodule update --init
 
-      - name: 下载 svac
-        uses: actions/checkout@v2
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
         with:
-          repository: xia-chu/fuck_svac
-          fetch-depth: 1
-          ref: master
-          path: 3rdpart/fuck_svac
-          token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: 下载 ffmpeg
-        uses: actions/checkout@v2
-        with:
-          repository: xia-chu/FFmpeg-svac
-          fetch-depth: 1
-          ref: release/6.1
-          path: 3rdpart/ffmpeg
-          token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: 下载 libg7221c
-        uses: actions/checkout@v2
-        with:
-          repository: xia-chu/g7221
-          fetch-depth: 1
-          ref: master
-          path: 3rdpart/g7221c
-          token: ${{ secrets.ACCESS_TOKEN }}
-
-      - name: 下载nasm
-        uses: actions/checkout@v2
-        with:
-          repository: netwide-assembler/nasm
-          fetch-depth: 1
-          ref: nasm-2.16
-          path: 3rdpart/nasm
-
-      - name: 下载git
-        uses: actions/checkout@v2
-        with:
-          repository: git/git
-          fetch-depth: 1
-          ref: v2.7.5
-          path: 3rdpart/git
-          submodules: recursive
-
-      - name: 下载vcpkg
-        uses: actions/checkout@v2
-        with:
-          repository: microsoft/vcpkg
-          fetch-depth: 1
-          ref: b27f6bfad367d64f8f0f3296351c5d246e182bb4
-          path: 3rdpart/vcpkg
-          submodules: recursive
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.USER_NAME }}
+          password: ${{ secrets.DOCKER_IO_SECRET }}
 
       - name: 启动 Docker 容器, 在Docker 容器中执行脚本
         run: |
-          docker pull centos:7
-          docker run -v $(pwd):/root -w /root --rm centos:7 sh -c "
+          docker pull zlmediakit/zlm_dev:linux_onnx
+          docker run -v $(pwd):/root/git -w /root/git --rm zlmediakit/zlm_dev:linux_onnx sh -c "
             #!/bin/bash
             set -x
-            ls -hl /root/3rdpart/stdcpp
           
-            # Backup original CentOS-Base.repo file
-            cp /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
-          
-            # Define new repository configuration
-            cat <<EOF > /etc/yum.repos.d/CentOS-Base.repo
-          [base]
-          name=CentOS-7 - Base - mirrors.aliyun.com
-          baseurl=http://mirrors.aliyun.com/centos/7/os/x86_64/
-          gpgcheck=1
-          gpgkey=http://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7
-          
-          [updates]
-          name=CentOS-7 - Updates - mirrors.aliyun.com
-          baseurl=http://mirrors.aliyun.com/centos/7/updates/x86_64/
-          gpgcheck=1
-          gpgkey=http://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7
-          EOF
-            cat > /etc/yum.repos.d/epel-aliyun.repo <<EOF
-          [epel]
-          name=Extra Packages for Enterprise Linux 7 - x86_64
-          baseurl=http://mirrors.aliyun.com/epel/7/x86_64/
-          enabled=1
-          gpgcheck=0
-          EOF
-            cat > /etc/yum.repos.d/CentOS-SCLo-aliyun.repo <<EOF
-          [C7-SCLo-rh]
-          name=CentOS-7 SCLo RH - x86_64
-          baseurl=http://mirrors.aliyun.com/centos/7/sclo/x86_64/rh/
-          enabled=1
-          gpgcheck=0
-          EOF
-          
-            # Clean yum cache and recreate it
-            yum clean all
-            yum makecache
-          
-            echo \"CentOS 7 软件源已成功切换\"
-          
-            mkdir -p /root/install
-          
-            yum install -y -q wget gcc gcc-c++ m4 perl-App-cpanminus make libtool-ltdl-devel help2man which curl zip unzip tar zlib-devel perl-Time-HiRes perl-Time-Piece perl-IPC-Cmd perl-CPAN openssl-devel libcurl-devel gettext-devel expat-devel pcre2-devel perl-ExtUtils-MakeMaker devtoolset-11 kernel-devel kernel-headers
-            source /opt/rh/devtoolset-11/enable
-            gcc --version
-          
-          
-            # === 1. 下载并静默安装 Miniconda ===
-            wget -q https://repo.anaconda.com/miniconda/Miniconda3-py39_23.3.1-0-Linux-x86_64.sh -O miniconda.sh
-            bash miniconda.sh -b -p "$HOME/miniconda"  # -b 表示 batch（静默安装）
-            export PATH="$HOME/miniconda/bin:$PATH"
-            
-            # === 2. 初始化 conda（非交互模式） ===
-            source "$HOME/miniconda/etc/profile.d/conda.sh"
-            
-            # === 3. 创建 Python 3.11 环境 ===
-            conda create -n py11 python=3.11 -y
-            
-            # === 4. 激活环境 ===
+            export PATH="/root/miniconda/bin:$PATH"
+            source "/root/miniconda/etc/profile.d/conda.sh"
             conda activate py11
-            
-            # === 5. 验证环境 ===
             python --version
           
-            # === 6. 安装必要模块 ===
-            conda install -y pip setuptools jinja2 wheel
-          
-            wget https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.gz > /dev/null 2>&1
-            tar xf autoconf-2.72.tar.gz > /dev/null 2>&1
-            cd autoconf-2.72
-            ./configure --prefix=/usr > /dev/null 2>&1
-            make -j$(nproc) > /dev/null 2>&1
-            make install
-            cd ..
-            rm -rf autoconf-2.72*
-          
-            wget https://gnuftp.uib.no/help2man/help2man-1.48.3.tar.xz > /dev/null 2>&1
-            tar xfv help2man-1.48.3.tar.xz > /dev/null 2>&1
-            cd help2man-1.48.3
-            ./configure --prefix=/usr > /dev/null 2>&1
-            make -j$(nproc) > /dev/null 2>&1
-            make install > /dev/null 2>&1
-            cd ..
-            cpanm --notest Thread::Queue > /dev/null 2>&1
-            rm -rf help2man-1.48.3*
-            
-            wget https://ftp.gnu.org/gnu/automake/automake-1.17.tar.gz > /dev/null 2>&1
-            tar xf automake-1.17.tar.gz > /dev/null 2>&1
-            cd automake-1.17
-            ./configure --prefix=/usr > /dev/null 2>&1
-            make -j$(nproc) install-exec > /dev/null 2>&1
-            make install > /dev/null 2>&1
-            cd ..
-            rm -rf automake-1.17*
-          
-            wget https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.gz > /dev/null 2>&1
-            tar xf libtool-2.4.7.tar.gz > /dev/null 2>&1
-            cd libtool-2.4.7
-            ./configure --prefix=/usr > /dev/null 2>&1
-            make -j$(nproc) > /dev/null 2>&1
-            make install > /dev/null 2>&1
-            cd ..
-            rm -rf libtool-2.4.7*
-          
-            wget https://ftp.gnu.org/gnu/autoconf-archive/autoconf-archive-2024.10.16.tar.xz > /dev/null 2>&1
-            tar xf autoconf-archive-2024.10.16.tar.xz > /dev/null 2>&1
-            cd autoconf-archive-2024.10.16 
-            ./configure --prefix=/usr/ > /dev/null 2>&1
-            make -j$(nproc) > /dev/null 2>&1
-            make install > /dev/null 2>&1
-            cd ..
-            rm -rf autoconf-archive-2024.10.16*
-
-            aclocal --version
-            autoconf --version
-            automake --version
-            libtoolize --version
-            
-            cd 3rdpart/git
-            make configure > /dev/null 2>&1
-            ./configure --prefix=/usr > /dev/null 2>&1
-            make all -j $(nproc)  > /dev/null 2>&1
-            make install > /dev/null 2>&1
-            cd ../../
-            rm -rf 3rdpart/git
-          
-            cd 3rdpart/nasm
-            ./autogen.sh > /dev/null 2>&1
-            ./configure --prefix=/usr > /dev/null 2>&1
-            make -j $(nproc) > /dev/null 2>&1
-            make install > /dev/null 2>&1
-            cd ../../
-            rm -rf 3rdpart/nasm
-          
-            wget -c https://ftp.gnu.org/gnu/bison/bison-3.8.2.tar.gz
-            tar xf bison-3.8.2.tar.gz
-            cd bison-3.8.2
-            ./configure --prefix=/usr
-            make -j$(nproc)
-            make install
-            cd ..
-            rm -rf bison-3.8.2*
-  
-            wget -q https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-x86_64.tar.gz  > /dev/null 2>&1
-            tar -xzf cmake-3.31.9-linux-x86_64.tar.gz  > /dev/null 2>&1
-            mv cmake-3.31.9-linux-x86_64 /usr/local/cmake-3.31.9
-            ln -s /usr/local/cmake-3.31.9/bin/* /usr/local/bin/
-            rm -rf cmake-3.31.9-linux-x86_64*
-          
             source /opt/rh/devtoolset-11/enable
             gcc --version
             
-            export LD_LIBRARY_PATH=/root/3rdpart/stdcpp/data/x86_64:$LD_LIBRARY_PATH
-            cd 3rdpart/vcpkg
-            ./bootstrap-vcpkg.sh
-            CFLAGS='-std=gnu99 -DTIOCGPTPEER=0x5441' CXXFLAGS='-std=gnu++11 -DTIOCGPTPEER=0x5441' VCPKG_BUILD_TYPE=release ./vcpkg install pkgconf eigen3 opencv4[core,contrib,freetype,dnn] --triplet x64-linux-dynamic
-            CFLAGS='-std=gnu99 -DTIOCGPTPEER=0x5441' CXXFLAGS='-std=gnu++11 -DTIOCGPTPEER=0x5441' VCPKG_BUILD_TYPE=release ./vcpkg install openssl amd-amf mp3lame aom aws-crt-cpp aws-sdk-cpp[core,s3,transfer] brotli \
-              bzip2[core,tool] curl[core,non-http,openssl,ssl] dirent expat ffnvcodec fontconfig freetype[brotli,bzip2,core,png,zlib] \
-              fribidi gperf harfbuzz[core,freetype] jemalloc libiconv libpng libsrtp[core,openssl] libuuid libvpx mfx-dispatch \
-              opencl openh264 opus pkgconf pthread pthreads s2n vulkan-headers x264[asm,core,gpl] x265 zlib --triplet x64-linux-dynamic
-            cd ../../
-            rm -rf 3rdpart/vcpkg/buildtrees/*
-            rm -rf 3rdpart/vcpkg/downloads/*
-            rm -rf 3rdpart/vcpkg/packages/*
-          
-            cd 3rdpart/onnxruntime/
-            sh ./build.sh  --allow_running_as_root --skip_tests --build_shared_lib --parallel $(nproc) --config Release --cmake_extra_defines CMAKE_POLICY_VERSION_MINIMUM=3.5
-            cd build/Linux/Release/
-            make install
-            cd ../../../../../
-            rm -rf 3rdpart/onnxruntime/
-          
-            cd 3rdpart/g7221c
-            mkdir build
-            cd build
-            cmake .. -DCMAKE_INSTALL_PREFIX=/root/install -DCMAKE_POSITION_INDEPENDENT_CODE=ON > /dev/null 2>&1
-            make -j $(nproc) > /dev/null 2>&1
-            make install > /dev/null 2>&1
-            cd ../../../
-            rm -rf 3rdpart/g7221c
-        
-            cd 3rdpart/fuck_svac
-            mkdir build
-            cd build
-            cmake .. -DCMAKE_BUILD_TYPE=Debug
-            make -j $(nproc)
-            make install > /dev/null 2>&1
-            cd ../../../
-        
-            export PKG_CONFIG_PATH=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig:/root/install/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig
-            export PKG_CONFIG_LIBDIR=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig
-            export LD_LIBRARY_PATH=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib:$LD_LIBRARY_PATH
-            export CFLAGS='-I/root/3rdpart/vcpkg/installed/x64-linux-dynamic/include -I/root/install/include -I/root/3rdpart/fuck_svac/sdk -fPIC'
-            export LDFLAGS='-L/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib -L/root/3rdpart/fuck_svac/sdk -L/root/install/lib -lstdc++ -lm -ldl -pthread'
-
-            cd 3rdpart/ffmpeg
-            ./configure --prefix=/root/install --enable-static --disable-shared --disable-programs --disable-doc --disable-debug \
-            --enable-g722_1c --enable-svac --enable-pic --disable-doc --enable-runtime-cpudetect --disable-autodetect --target-os=linux \
-            --enable-pthreads --cc=cc --host_cc=cc --cxx=c++ --nm=nm --ar=ar --ranlib=ranlib --strip=strip --enable-nonfree \
-            --enable-gpl --disable-ffplay --disable-ffprobe --enable-avcodec --enable-avdevice --enable-avformat \
-            --enable-avfilter --disable-postproc --enable-swresample --enable-swscale --disable-alsa --enable-amf --enable-libaom \
-            --disable-libass --disable-avisynth --disable-bzlib --disable-libdav1d --disable-libfdk-aac --enable-libfontconfig \
-            --enable-libharfbuzz --enable-libfreetype --enable-libfribidi --disable-iconv --disable-libilbc --disable-lzma \
-            --enable-libmp3lame --disable-libmodplug --enable-cuda --enable-nvenc --enable-nvdec --enable-cuvid --enable-ffnvcodec \
-            --enable-opencl --disable-opengl --enable-libopenh264 --disable-libopenjpeg --disable-libopenmpt --disable-openssl \
-            --enable-libopus --disable-sdl2 --disable-libsnappy --disable-libsoxr --disable-libspeex --disable-libssh --disable-libtensorflow \
-            --disable-libtesseract --disable-libtheora --disable-libvorbis --enable-libvpx --enable-vulkan --disable-libwebp --enable-libx264 \
-            --enable-libx265 --disable-libxml2 --disable-zlib --disable-libsrt --enable-libmfx --enable-encoder=h264_qsv \
-            --enable-decoder=h264_qsv --enable-cross-compile --pkg-config=/bin/pkg-config --enable-optimizations --arch=x86_64 --enable-asm --enable-x86asm
-        
-            make -j $(nproc) > /dev/null 2>&1
-            make install > /dev/null 2>&1
-            cd ../../
-            rm -rf 3rdpart/ffmpeg
-          
+            export PKG_CONFIG_PATH=/root/src/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig/:/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig/
             mkdir -p build
             cd build
             cmake .. \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DPYTHON_EXECUTABLE=$(which python3.11) \
             -DENABLE_ONNX=ON \
-            -DOpenCV_ROOT=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/share/opencv4 \
+            -DOpenCV_ROOT=/root/src/vcpkg/installed/x64-linux-dynamic/share/opencv4 \
             -DONNXRUNTIME_PATH_ROOT=/usr/local/ \
             -DBUILD_SHARED_LIBS=off \
             -DENABLE_AI=ON \
@@ -389,23 +127,18 @@ jobs:
             -DENABLE_SVAC=ON \
             -DENABLE_G722_1=ON \
             -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic \
-            -DCMAKE_TOOLCHAIN_FILE=/root/3rdpart/vcpkg/scripts/buildsystems/vcpkg.cmake \
-            -DCMAKE_CXX_FLAGS='-L/root/3rdpart/fuck_svac/sdk -ldl'
+            -DCMAKE_TOOLCHAIN_FILE=/root/src/vcpkg/scripts/buildsystems/vcpkg.cmake
           
             make -j $(nproc)
           
             cd ..
             rm -rf release/linux/Release/*.a
-            rm -rf /root/3rdpart/fuck_svac/sdk/*.h
-            rm -rf /root/3rdpart/fuck_svac/sdk/*.a
-          
-            mkdir -p release/linux/Release/bin
             mkdir -p release/linux/Release/lib
             mkdir -p release/linux/Release/models 
             mkdir -p release/linux/Release/conf
           
-            cp -rfP /root/3rdpart/fuck_svac/sdk/* release/linux/Release/lib/
-            cp -rfP /root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/* release/linux/Release/lib
+            cp -rfP /root/src/svac/* release/linux/Release/lib/
+            cp -rfP /root/src/vcpkg/installed/x64-linux-dynamic/lib/* release/linux/Release/lib
             cp -rf conf/* release/linux/Release/conf 
             cp -rfP /usr/local/lib64/libonnxruntime* release/linux/Release/lib
             cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/

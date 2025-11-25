@@ -1,4 +1,4 @@
-name: Linux_onnx2
+name: Linux3
 
 on:
   issue_comment:
@@ -60,23 +60,6 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           path: .
 
-      - name: 下载ai插件源码
-        uses: actions/checkout@v2
-        with:
-          repository: xia-chu/yolov8_trt
-          fetch-depth: 1
-          ref: main
-          token: ${{ secrets.ACCESS_TOKEN }}
-          path: 3rdpart/yolov8_trt
-
-      - name: 下载onnxruntime源码
-        uses: actions/checkout@v2
-        with:
-          repository: microsoft/onnxruntime
-          fetch-depth: 1
-          ref: v1.22.1
-          path: 3rdpart/onnxruntime
-
       - name: 下载stdcpp
         uses: actions/checkout@v2
         with:
@@ -88,14 +71,8 @@ jobs:
         run: |
           echo "HASH=$(git log -1 --format='%H')" >> $GITHUB_ENV
 
-      - name: 下载 submodule 源码
-        run: |
-          mv .gitmodules_github .gitmodules
-          git submodule sync
-          git submodule update --init
-          rm -f tests/*.cpp api/tests/*.c
-          cd 3rdpart/yolov8_trt
-          git submodule update --init
+      - name: 下载submodule源码
+        run: mv -f .gitmodules_github .gitmodules && git submodule sync && git submodule update --init
 
       - name: 下载 svac
         uses: actions/checkout@v2
@@ -198,30 +175,11 @@ jobs:
           
             mkdir -p /root/install
           
-            yum install -y -q wget gcc gcc-c++ m4 perl-App-cpanminus make libtool-ltdl-devel help2man which curl zip unzip tar zlib-devel perl-Time-HiRes perl-Time-Piece perl-IPC-Cmd perl-CPAN openssl-devel libcurl-devel gettext-devel expat-devel pcre2-devel perl-ExtUtils-MakeMaker devtoolset-11 kernel-devel kernel-headers
+            yum install -y -q wget gcc gcc-c++ m4 perl-App-cpanminus make libtool-ltdl-devel help2man which curl zip unzip tar zlib-devel perl-Time-HiRes perl-Time-Piece perl-IPC-Cmd perl-CPAN openssl-devel libcurl-devel gettext-devel expat-devel pcre2-devel perl-ExtUtils-MakeMaker devtoolset-11 rh-python38 kernel-devel kernel-headers
             source /opt/rh/devtoolset-11/enable
             gcc --version
-          
-          
-            # === 1. 下载并静默安装 Miniconda ===
-            wget -q https://repo.anaconda.com/miniconda/Miniconda3-py39_23.3.1-0-Linux-x86_64.sh -O miniconda.sh
-            bash miniconda.sh -b -p "$HOME/miniconda"  # -b 表示 batch（静默安装）
-            export PATH="$HOME/miniconda/bin:$PATH"
-            
-            # === 2. 初始化 conda（非交互模式） ===
-            source "$HOME/miniconda/etc/profile.d/conda.sh"
-            
-            # === 3. 创建 Python 3.11 环境 ===
-            conda create -n py11 python=3.11 -y
-            
-            # === 4. 激活环境 ===
-            conda activate py11
-            
-            # === 5. 验证环境 ===
+            source /opt/rh/rh-python38/enable
             python --version
-          
-            # === 6. 安装必要模块 ===
-            conda install -y pip setuptools jinja2 wheel
           
             wget https://ftp.gnu.org/gnu/autoconf/autoconf-2.72.tar.gz > /dev/null 2>&1
             tar xf autoconf-2.72.tar.gz > /dev/null 2>&1
@@ -230,7 +188,6 @@ jobs:
             make -j$(nproc) > /dev/null 2>&1
             make install
             cd ..
-            rm -rf autoconf-2.72*
           
             wget https://gnuftp.uib.no/help2man/help2man-1.48.3.tar.xz > /dev/null 2>&1
             tar xfv help2man-1.48.3.tar.xz > /dev/null 2>&1
@@ -240,7 +197,6 @@ jobs:
             make install > /dev/null 2>&1
             cd ..
             cpanm --notest Thread::Queue > /dev/null 2>&1
-            rm -rf help2man-1.48.3*
             
             wget https://ftp.gnu.org/gnu/automake/automake-1.17.tar.gz > /dev/null 2>&1
             tar xf automake-1.17.tar.gz > /dev/null 2>&1
@@ -249,7 +205,6 @@ jobs:
             make -j$(nproc) install-exec > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ..
-            rm -rf automake-1.17*
           
             wget https://ftp.gnu.org/gnu/libtool/libtool-2.4.7.tar.gz > /dev/null 2>&1
             tar xf libtool-2.4.7.tar.gz > /dev/null 2>&1
@@ -258,7 +213,6 @@ jobs:
             make -j$(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ..
-            rm -rf libtool-2.4.7*
           
             wget https://ftp.gnu.org/gnu/autoconf-archive/autoconf-archive-2024.10.16.tar.xz > /dev/null 2>&1
             tar xf autoconf-archive-2024.10.16.tar.xz > /dev/null 2>&1
@@ -267,7 +221,6 @@ jobs:
             make -j$(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ..
-            rm -rf autoconf-archive-2024.10.16*
 
             aclocal --version
             autoconf --version
@@ -280,7 +233,6 @@ jobs:
             make all -j $(nproc)  > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ../../
-            rm -rf 3rdpart/git
           
             cd 3rdpart/nasm
             ./autogen.sh > /dev/null 2>&1
@@ -288,45 +240,25 @@ jobs:
             make -j $(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ../../
-            rm -rf 3rdpart/nasm
           
-            wget -c https://ftp.gnu.org/gnu/bison/bison-3.8.2.tar.gz
-            tar xf bison-3.8.2.tar.gz
-            cd bison-3.8.2
-            ./configure --prefix=/usr
-            make -j$(nproc)
-            make install
-            cd ..
-            rm -rf bison-3.8.2*
-  
-            wget -q https://github.com/Kitware/CMake/releases/download/v3.31.9/cmake-3.31.9-linux-x86_64.tar.gz  > /dev/null 2>&1
-            tar -xzf cmake-3.31.9-linux-x86_64.tar.gz  > /dev/null 2>&1
-            mv cmake-3.31.9-linux-x86_64 /usr/local/cmake-3.31.9
-            ln -s /usr/local/cmake-3.31.9/bin/* /usr/local/bin/
-            rm -rf cmake-3.31.9-linux-x86_64*
+            wget -q https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.tar.gz  > /dev/null 2>&1
+            tar -xzf cmake-3.26.4-linux-x86_64.tar.gz  > /dev/null 2>&1
+            mv cmake-3.26.4-linux-x86_64 /usr/local/cmake-3.26.4
+            ln -s /usr/local/cmake-3.26.4/bin/* /usr/local/bin/
           
-            source /opt/rh/devtoolset-11/enable
-            gcc --version
+            export CFLAGS="-fPIC"
             
             export LD_LIBRARY_PATH=/root/3rdpart/stdcpp/data/x86_64:$LD_LIBRARY_PATH
+
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
-            CFLAGS='-std=gnu99 -DTIOCGPTPEER=0x5441' CXXFLAGS='-std=gnu++11 -DTIOCGPTPEER=0x5441' VCPKG_BUILD_TYPE=release ./vcpkg install pkgconf eigen3 opencv4[core,contrib,freetype,dnn] --triplet x64-linux-dynamic
-            CFLAGS='-std=gnu99 -DTIOCGPTPEER=0x5441' CXXFLAGS='-std=gnu++11 -DTIOCGPTPEER=0x5441' VCPKG_BUILD_TYPE=release ./vcpkg install openssl amd-amf mp3lame aom aws-crt-cpp aws-sdk-cpp[core,s3,transfer] brotli \
+          
+            VCPKG_BUILD_TYPE=release ./vcpkg install amd-amf mp3lame aom aws-crt-cpp aws-sdk-cpp[core,s3,transfer] brotli \
               bzip2[core,tool] curl[core,non-http,openssl,ssl] dirent expat ffnvcodec fontconfig freetype[brotli,bzip2,core,png,zlib] \
               fribidi gperf harfbuzz[core,freetype] jemalloc libiconv libpng libsrtp[core,openssl] libuuid libvpx mfx-dispatch \
-              opencl openh264 opus pkgconf pthread pthreads s2n vulkan-headers x264[asm,core,gpl] x265 zlib --triplet x64-linux-dynamic
-            cd ../../
-            rm -rf 3rdpart/vcpkg/buildtrees/*
-            rm -rf 3rdpart/vcpkg/downloads/*
-            rm -rf 3rdpart/vcpkg/packages/*
+              opencl openh264 openssl opus pkgconf pthread pthreads s2n vulkan-headers x264[asm,core,gpl] x265 zlib --triplet x64-linux-dynamic
           
-            cd 3rdpart/onnxruntime/
-            sh ./build.sh  --allow_running_as_root --skip_tests --build_shared_lib --parallel $(nproc) --config Release --cmake_extra_defines CMAKE_POLICY_VERSION_MINIMUM=3.5
-            cd build/Linux/Release/
-            make install
-            cd ../../../../../
-            rm -rf 3rdpart/onnxruntime/
+            cd ../../
           
             cd 3rdpart/g7221c
             mkdir build
@@ -335,7 +267,6 @@ jobs:
             make -j $(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ../../../
-            rm -rf 3rdpart/g7221c
         
             cd 3rdpart/fuck_svac
             mkdir build
@@ -345,7 +276,7 @@ jobs:
             make install > /dev/null 2>&1
             cd ../../../
         
-            export PKG_CONFIG_PATH=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig:/root/install/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig
+            export PKG_CONFIG_PATH=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig:/root/install/lib/pkgconfig
             export PKG_CONFIG_LIBDIR=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig
             export LD_LIBRARY_PATH=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib:$LD_LIBRARY_PATH
             export CFLAGS='-I/root/3rdpart/vcpkg/installed/x64-linux-dynamic/include -I/root/install/include -I/root/3rdpart/fuck_svac/sdk -fPIC'
@@ -369,18 +300,10 @@ jobs:
             make -j $(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ../../
-            rm -rf 3rdpart/ffmpeg
           
             mkdir -p build
             cd build
             cmake .. \
-            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-            -DPYTHON_EXECUTABLE=$(which python3.11) \
-            -DENABLE_ONNX=ON \
-            -DOpenCV_ROOT=/root/3rdpart/vcpkg/installed/x64-linux-dynamic/share/opencv4 \
-            -DONNXRUNTIME_PATH_ROOT=/usr/local/ \
-            -DBUILD_SHARED_LIBS=off \
-            -DENABLE_AI=ON \
             -DCMAKE_BUILD_TYPE=Release \
             -DENABLE_WEBRTC=ON \
             -DENABLE_FFMPEG=ON \
@@ -398,20 +321,12 @@ jobs:
             rm -rf release/linux/Release/*.a
             rm -rf /root/3rdpart/fuck_svac/sdk/*.h
             rm -rf /root/3rdpart/fuck_svac/sdk/*.a
-          
+        
+            cp -rfP /root/3rdpart/fuck_svac/sdk release/linux/Release/lib
             mkdir -p release/linux/Release/bin
-            mkdir -p release/linux/Release/lib
-            mkdir -p release/linux/Release/models 
-            mkdir -p release/linux/Release/conf
           
-            cp -rfP /root/3rdpart/fuck_svac/sdk/* release/linux/Release/lib/
             cp -rfP /root/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/* release/linux/Release/lib
-            cp -rf conf/* release/linux/Release/conf 
-            cp -rfP /usr/local/lib64/libonnxruntime* release/linux/Release/lib
-            cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/
-            cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
             rm -rf release/linux/Release/lib/*.a
-
           "
 
       - name: 设置环境变量
@@ -421,16 +336,25 @@ jobs:
           echo "DATE2=$(date +%s)" >> $GITHUB_ENV
           tar -czf release.tar.gz -C release/linux .
 
+      - name: 打包ffbuild
+        id: upload_ffbuild
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}_ffbuild
+          path: 3rdpart/ffmpeg/ffbuild/config.log
+          if-no-files-found: error
+          retention-days: 90
+
       - name: 发布信息
         run: |
-          cat <<EOF > release.txt
-          - 分支: ${{ env.BRANCH }}
-          - git hash: ${{ env.HASH }}
-          - 编译日期: ${{ env.DATE }}
-          - 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          - 打包 ci 名: ${{ github.workflow }}
-          - 说明: 本二进制在 centos7(x64) 上编译，已开启硬件编解码，支持svac,g722.1自定义解码器, 开启onnxruntime(cpu) ai推理, 本程序依赖python3.11, 运行前请miniconda安装python3.11
-          EOF
+          release_info="- 分支: ${{ env.BRANCH }}\n"
+          release_info+="- git hash: ${{ env.HASH }}\n"
+          release_info+="- 编译日期: ${{ env.DATE }}\n"
+          release_info+="- 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n"
+          release_info+="- 打包ci名: ${{ github.workflow }}\n"
+          release_info+="- 开启特性: openssl/webrtc/datachannel/ffmpeg\n"
+          release_info+="- 说明: 本二进制在centos7(x64)上编译，已开启硬件编解码，支持svac,g722.1自定义解码器\n"
+          echo -e "$release_info" >> release.txt
 
       - name: 创建 Release
         id: create_release
