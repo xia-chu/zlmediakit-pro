@@ -120,6 +120,11 @@ docker pull zlmediakit/zlmediakit-pro:feature_all
 
 
 ## 更新记录
+- 2025-12-23
+  - 新增支持删除s3云存储文件夹，修复s3云存储目录遍历相关问题。
+  - 优化webrtc抗丢包乱序逻辑。
+  - 修复WebRtcSession对象可能泄露的bug。
+  - 
 - 2025-12-15
   - 新增支持python编写zlm http api接口和对接处理hook事件回调。
   - ai推理新增支持设置任务优先级，支持抢占式实时模式。
