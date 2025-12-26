@@ -141,7 +141,7 @@ jobs:
           - 编译日期: ${{ env.DATE }}
           - 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
           - 打包 ci 名: ${{ github.workflow }}
-          - 说明: 本二进制在 centos7(x64) 上编译，已开启硬件编解码，支持svac,g722.1自定义解码器, 开启onnxruntime(cpu) ai推理, 本程序依赖python3.11, 运行前请miniconda安装python3.11
+          - 说明: 本二进制在 centos7(x64) 上编译，已开启硬件编解码，支持svac,g722.1自定义解码器
           EOF
 
       - name: 创建 Release

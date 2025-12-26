@@ -265,7 +265,7 @@ jobs:
           release_info+="- 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n"
           release_info+="- 打包ci名: ${{ github.workflow }}\n"
           release_info+="- 开启特性: openssl/webrtc/datachannel/ffmpeg \n"
-          release_info+="- 说明: 本二进制在centos7上编译，已开启硬件编解码\n"
+          release_info+="- 说明: 本二进制在 centos7(x64) 上编译，已开启硬件编解码，支持svac,g722.1自定义解码器\n"
           echo -e "$release_info" >> release.txt
 
       - name: 创建 Release
