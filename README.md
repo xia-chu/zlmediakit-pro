@@ -120,6 +120,9 @@ docker pull zlmediakit/zlmediakit-pro:feature_all
 
 
 ## 更新记录
+- 2025-12-29
+  - 流式录像mp4至s3云存储支持非fmp4格式，解决fmp4录像http点播无法秒开的问题。
+    
 - 2025-12-26
   - 增强事件视频录制，回溯和前向录制时间均支持负数。
   - 音频nack反馈包个数可单独设置，提高音频重传速度。
