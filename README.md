@@ -120,6 +120,9 @@ docker pull zlmediakit/zlmediakit-pro:feature_all
 
 
 ## 更新记录
+- 2026-1-1
+  - 新增支持mcu多人语音聊天室，混音前支持背景噪声消除，静音不参与混音。
+  
 - 2025-12-29
   - 流式录像mp4至s3云存储支持非fmp4格式，解决fmp4录像http点播无法秒开的问题。
     
