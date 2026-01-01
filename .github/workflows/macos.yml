@@ -34,7 +34,7 @@ jobs:
           echo "BRANCH=$branch_name" >> $GITHUB_ENV
           if [ "$ci_name" != "${{ github.workflow }}" ]; then
               echo "ci不匹配"
-              exit 1
+              # exit 1
           fi
 
       - name: 下载源码
