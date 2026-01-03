@@ -65,9 +65,6 @@ zlmediakit pro原则上不提供源码授权，只提供二进制使用授权，
   - 支持mp4/hls录制至云存储，支持从云存储点播mp4为rtsp/rtmp/flv/webrtc等协议。
   - 绝大部分文件都支持云存储读写。
  
-- WebRTC集群
-  - 支持rtc流量代理，解决k8s部署zlmediakit webrtc服务时，http信令交互与rtc流量打不到同一个pod实例的问题。
- 
 - AI推理
   - 支持yolo推理插件，支持人员、车辆等目标AI识别，支持目标跟踪，支持多边形布防，支持ocr，支持c++/python插件快速混合开发。
   - 支持tensorRT 全cuda加速推理。
@@ -75,6 +72,12 @@ zlmediakit pro原则上不提供源码授权，只提供二进制使用授权，
   - 支持算能(比特大陆)平台推理。
   - 支持华为昇腾(ascend)平台推理。
   - python插件支持调用c++接口操作流媒体与绘制当前视频画面。
+
+- WebRTC集群
+  - 支持rtc流量代理，解决k8s部署zlmediakit webrtc服务时，http信令交互与rtc流量打不到同一个pod实例的问题。
+ 
+- WebRTC mcu语音聊天室
+  - 支持mcu多人语音聊天室，混音前支持背景噪声消除，静音不参与混音，解决超大规模多人语音聊天室sfu方案不可用的问题。
 
 
 ## 使用技术文档
