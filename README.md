@@ -15,7 +15,7 @@ zlmediakit pro原则上不提供源码授权，只提供二进制使用授权，
 
 ## 怎么开启专业版功能？
 - 下载程序：
-  点击[下载链接](https://github.com/xia-chu/zlmediakit-pro/tags), 选择您试用系统对应的程序包。
+  点击[下载链接](https://github.com/xia-chu/zlmediakit-pro/issues/3), 选择您试用系统对应的程序包。
 
 - 程序的试用：
   程序启动时会触发联网激活试用，每台机器默认支持15天全功能全额度试用；试用必须在非docker环境内开启，每台机器默认只能试用一次。
@@ -92,35 +92,36 @@ zlmediakit pro原则上不提供源码授权，只提供二进制使用授权，
 
 
 ## 下载二进制包
-请在[tags列表](https://github.com/xia-chu/zlmediakit-pro/tags)下载您对应平台的二进制包。
-二进制包分为:
+请在[发行包列表](https://github.com/xia-chu/zlmediakit-pro/issues/3)最下面下载各平台最新的二进制发行包，非onnx版本支持ai推理外所有专业版功能，onnx版本由于依赖Python环境，部署比较麻烦，所以单独提供：
+
 - Linux版本:
-  
-  centos7上编译，支持svac、g722.1自定义解码器，vcpkg编译依赖项，支持cuda、qsv、amf、aom、opencl、openh264、vpx、vulkan等编解码器，支持s3云存储，功能全面。
+
+    centos7上编译，支持svac、g722.1自定义解码器，vcpkg编译依赖项，支持cuda、qsv、amf、aom、opencl、openh264、vpx、vulkan等编解码器。
 
 - Linux ARM版本：
-  
-  和Linux普通版本相比功能基本一致，移除了对svac、g722.1自定义解码器的支持，在kylin:v10sp1-aarch64上编译。
+
+    和Linux普通版本相比功能基本一致，移除了对svac、g722.1自定义解码器的支持，在kylin:v10sp1-aarch64上编译。
 
 - Linux onnx版本：
-  
-  和Linux普通版本相比增加onnx cpu推理功能，依赖python运行环境，需要先miniconda安装python3.11才能启动。
-  
+
+    和Linux普通版本相比增加onnx cpu推理功能，依赖python运行环境，需要先miniconda安装python3.11才能启动。
+
 - Windows版本:
-  
-  支持特性全面，vcpkg编译依赖项，支持cuda、qsv、amf、aom、dav1d、opencl、openh264、vpx、vulkan等编解码器，支持s3云存储，功能全面。
+
+    支持特性全面，vcpkg编译依赖项，支持cuda、qsv、amf、aom、dav1d、opencl、openh264、vpx、vulkan等编解码器。
 
 - Windows onnx版本:
-  
-  和Windows普通版本相比增加onnx cuda推理功能，依赖python运行环境，依赖cuda和cudnn环境。
+
+    和Windows普通版本相比增加onnx cuda推理功能，依赖python运行环境，依赖cuda和cudnn环境。
 
 - macOS版本：
-  
-  支持aom、openh264、vpx、videotoolbox等编解码器，支持s3云存储，功能全面。
+
+    支持aom、openh264、vpx、videotoolbox等编解码器。
 
 - macOS onnx版本：
-  
-  和macOS普通版本相比增加onnx coreml推理功能，依赖python运行环境，需要先brew install python@3.14才能启动。
+
+    和macOS普通版本相比增加onnx coreml推理功能，依赖python运行环境，需要先brew install python@3.14才能启动。
+
 
 ## docker下载
 docker支持x86_64和arm64平台，支持硬件编解码器，支持s3云存储，功能全面。
