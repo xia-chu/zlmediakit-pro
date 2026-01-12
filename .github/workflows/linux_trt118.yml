@@ -1,4 +1,4 @@
-name: Linux
+name: Linux_trt118
 
 on:
   issue_comment:
@@ -64,6 +64,23 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           path: .
 
+      - name: 下载ai插件源码
+        uses: actions/checkout@v2
+        with:
+          repository: xia-chu/yolov8_trt
+          fetch-depth: 1
+          ref: main
+          token: ${{ secrets.ACCESS_TOKEN }}
+          path: 3rdpart/yolov8_trt
+
+      - name: 下载 SRTP
+        uses: actions/checkout@v2
+        with:
+          repository: cisco/libsrtp
+          fetch-depth: 1
+          ref: v2.3.0
+          path: 3rdpart/libsrtp
+
       - name: 获取git hash
         run: |
           echo "HASH=$(git log -1 --format='%H')" >> $GITHUB_ENV
@@ -74,6 +91,8 @@ jobs:
           git submodule sync
           git submodule update --init
           rm -f tests/*.cpp api/tests/*.c
+          cd 3rdpart/yolov8_trt
+          git submodule update --init
 
       - name: Log into registry ${{ env.REGISTRY }}
         uses: docker/login-action@v3
@@ -82,46 +101,59 @@ jobs:
           username: ${{ env.USER_NAME }}
           password: ${{ secrets.DOCKER_IO_SECRET }}
 
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/hostedtoolcache
+          sudo docker system prune -af || true
+          df -h
+
       - name: 启动 Docker 容器, 在Docker 容器中执行脚本
         run: |
-          docker pull zlmediakit/zlm_dev:linux_onnx
-          docker run -v $(pwd):/root/git -w /root/git --rm zlmediakit/zlm_dev:linux_onnx sh -c "
+          docker pull zlmediakit/cuda_dev:11.8
+          docker run -v $(pwd):/root/git -w /root/git --rm zlmediakit/cuda_dev:11.8 sh -c "
             #!/bin/bash
             set -x
-          
-            export PATH="/root/miniconda/bin:$PATH"
-            source "/root/miniconda/etc/profile.d/conda.sh"
-            conda activate py11
+            apt update
+            apt install -y libeigen3-dev libssl-dev python3.9 libpython3.9-dev python3.9-pip
             python --version
-          
-            source /opt/rh/devtoolset-11/enable
             gcc --version
+          
+            python3.9 -m pip install distutils
+          
+            cd 3rdpart/libsrtp
+            ./configure --enable-openssl
+            make -j $(nproc) > /dev/null 2>&1
+            make install > /dev/null 2>&1
+            cd ../../
             
-            export PKG_CONFIG_PATH=/root/src/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig/:/usr/local/lib/pkgconfig:/usr/local/lib64/pkgconfig/
             mkdir -p build
             cd build
             cmake .. \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
+            -DPYTHON_EXECUTABLE=$(which python3) \
+            -DENABLE_CUDA=ON \
+            -DBUILD_SHARED_LIBS=off \
+            -DENABLE_AI=ON \
             -DCMAKE_BUILD_TYPE=Release \
             -DENABLE_WEBRTC=ON \
             -DENABLE_FFMPEG=ON \
             -DENABLE_TESTS=OFF \
-            -DENABLE_API=OFF \
-            -DENABLE_SVAC=ON \
-            -DENABLE_G722_1=ON \
-            -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic \
-            -DCMAKE_TOOLCHAIN_FILE=/root/src/vcpkg/scripts/buildsystems/vcpkg.cmake
+            -DENABLE_API=OFF
           
             make -j $(nproc)
           
             cd ..
             rm -rf release/linux/Release/*.a
             mkdir -p release/linux/Release/lib
+            mkdir -p release/linux/Release/models 
             mkdir -p release/linux/Release/conf
           
-            cp -rfP /root/src/svac/* release/linux/Release/lib/
-            cp -rfP /root/src/vcpkg/installed/x64-linux-dynamic/lib/* release/linux/Release/lib
             cp -rf conf/* release/linux/Release/conf 
+            cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/
+            cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
             rm -rf release/linux/Release/lib/*.a
 
           "
@@ -157,9 +189,8 @@ jobs:
                 + '- 编译日期: ${{ env.DATE }}\n' 
                 + '- 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n'
                 + '- 打包ci名: ${{ github.workflow }}\n'
-                + '- 说明: 本二进制在 centos7(x64) 上编译，已开启硬件编解码，支持svac,g722.1自定义解码器\n' 
+                + '- 说明: 本二进制在 centos7(x64) 上编译，已开启硬件编解码，支持svac,g722.1自定义解码器, 开启onnxruntime(cpu) ai推理, 本程序依赖python3.11, 运行前请miniconda安装python3.11\n' 
             })
-
 
 #      - name: 发布信息
 #        run: |
@@ -169,7 +200,7 @@ jobs:
 #          - 编译日期: ${{ env.DATE }}
 #          - 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 #          - 打包 ci 名: ${{ github.workflow }}
-#          - 说明: 本二进制在 centos7(x64) 上编译，已开启硬件编解码，支持svac,g722.1自定义解码器
+#          - 说明: 本二进制在 centos7(x64) 上编译，已开启硬件编解码，支持svac,g722.1自定义解码器, 开启onnxruntime(cpu) ai推理, 本程序依赖python3.11, 运行前请miniconda安装python3.11
 #          EOF
 #
 #      - name: 创建 Release
