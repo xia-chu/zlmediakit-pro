@@ -136,6 +136,7 @@ jobs:
           cp -rfP ${{ env.ONNXRUNTIME_ROOT }}/lib/libonnxruntime* release/darwin/Release/lib
           cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/darwin/Release/models/
           cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/darwin/Release/
+          cp -rf 3rdpart/yolov8_trt/cpp/detect/coco.yaml release/linux/Release/
           
           rm -rf release/darwin/Release/lib/*.a
 

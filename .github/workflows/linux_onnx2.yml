@@ -410,6 +410,7 @@ jobs:
             cp -rfP /usr/local/lib64/libonnxruntime* release/linux/Release/lib
             cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/
             cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
+            cp -rf 3rdpart/yolov8_trt/cpp/detect/coco.yaml release/linux/Release/
             rm -rf release/linux/Release/lib/*.a
 
           "

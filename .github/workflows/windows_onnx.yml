@@ -145,6 +145,7 @@ jobs:
           Copy-Item -Path "conf\*" -Destination "release\windows\Release\conf" -Recurse -Force
           Copy-Item -Path "3rdpart\yolov8_trt\cpp\detect\onnx_model\*" -Destination "release\windows\Release\models" -Recurse -Force
           Copy-Item -Path "3rdpart\yolov8_trt\cpp\detect\python" -Destination "release\windows\Release" -Recurse -Force
+          Copy-Item -Path "3rdpart\yolov8_trt\cpp\detect\coco.yaml" -Destination "release\windows\Release" -Recurse -Force
     
           Remove-Item -Path release\windows\Release\*.lib -Force
           Remove-Item -Path release\windows\Release\*.pdb -Force
