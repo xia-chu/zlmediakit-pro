@@ -112,7 +112,7 @@ zlmediakit pro原则上不提供源码授权，只提供二进制使用授权，
 
 - Linux trt129 版本：
 
-   和Linux普通版本相比增加tensorRT(12.9版本)gpu加速推理功能，全硬件编解码+tensorRT推理+cuda加速，全显存处理链路，性能最佳，依赖Python3.9，支持新型号的英伟达显卡(例如RTX5系显卡)。
+   和Linux普通版本相比增加tensorRT(12.9版本)gpu加速推理功能，全硬件编解码+tensorRT推理+cuda加速，全显存处理链路，性能最佳，依赖Python3.12，支持新型号的英伟达显卡(例如RTX5系显卡)。
 
 - Windows版本:
 
