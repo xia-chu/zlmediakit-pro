@@ -1,4 +1,4 @@
-name: Linux_trt118
+name: Linux_trt129
 
 on:
   issue_comment:
@@ -104,12 +104,15 @@ jobs:
 
       - name: 启动 Docker 容器, 在Docker 容器中执行脚本
         run: |
-          docker pull zlmediakit/cuda_dev:11.8
-          docker run -v $(pwd):/root/git -w /root/git --rm zlmediakit/cuda_dev:11.8 sh -c "
+          docker pull zlmediakit/cuda_dev:12.9
+          docker run -v $(pwd):/root/git -w /root/git --rm zlmediakit/cuda_dev:12.9 sh -c "
             #!/bin/bash
             set -x
+            rm -f /etc/apt/sources.list.d/nv-tensorrt-local-ubuntu2404-10.11.0-cuda-12.9.list
             apt update
-            apt install -y libeigen3-dev libssl-dev python3.9 libpython3.9-dev python3-pip python3.9-distutils         
+            apt install -y libeigen3-dev libssl-dev python3.12 python3.12-venv libpython3.12-dev python3-pip fonts-noto-cjk
+            python3.12 -m venv ~/venv
+            source ~/venv/bin/activate
             python3 --version
             gcc --version
           
@@ -174,7 +177,7 @@ jobs:
                 + '- 编译日期: ${{ env.DATE }}\n' 
                 + '- 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n'
                 + '- 打包ci名: ${{ github.workflow }}\n'
-                + '- 说明: 本二进制在 ubuntu20.04(x64) 上编译，开启tensorrt11.8(gpu) ai推理；请参考[wiki](https://github.com/xia-chu/zlmediakit-pro/wiki/Linux-tensorRT11.8%E6%8E%A8%E7%90%86%E6%95%99%E7%A8%8B)部署运行\n' 
+                + '- 说明: 本二进制在 ubuntu24.04(x64) 上编译，开启tensorrt12.9(gpu) ai推理；请参考[wiki](https://github.com/xia-chu/zlmediakit-pro/wiki/Linux-tensorRT12.9%E6%8E%A8%E7%90%86%E6%95%99%E7%A8%8B)部署运行\n' 
             })
 
 
