@@ -121,6 +121,10 @@ zlmediakit pro原则上不提供源码授权，只提供二进制使用授权，
 - Windows onnx版本:
 
     和Windows普通版本相比增加onnx cuda推理功能，依赖python运行环境，依赖cuda和cudnn环境。
+  
+- [Windows trt版本](https://github.com/xia-chu/zlmediakit-pro/releases/download/release/windows-trt-2026-1-20.zip):
+
+    和Windows普通版本相比增加cuda+tensorRT推理功能，依赖python3.14+cuda12运行环境。
 
 - macOS版本：
 
