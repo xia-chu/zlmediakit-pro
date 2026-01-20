@@ -125,6 +125,7 @@ jobs:
             -DENABLE_WEBRTC=ON \
             -DENABLE_FFMPEG=ON \
             -DENABLE_TESTS=OFF \
+            -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc \
             -DENABLE_API=OFF
           
             make -j $(nproc)
