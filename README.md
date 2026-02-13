@@ -143,6 +143,10 @@ docker pull zlmediakit/zlmediakit-pro:feature_all
 
 
 ## 更新记录
+- 2026-2-13
+  - 合并最新开源代码，支持Python混合编程模式(仅trt和onnx版本二进制包开启)。
+  - 优化mcu多人语音聊天室与ai推理相关功能。
+    
 - 2026-1-8
   - 优化mp4录制时间戳逻辑，允许最大60秒时间戳跳跃，解决duration与osd信息不匹配的问题。
   - 优化mcu多人语音聊天室性能，最大房间参会人数不再有性能瓶颈限制，支持千人级别连麦。
