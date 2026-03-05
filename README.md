@@ -143,6 +143,10 @@ docker pull zlmediakit/zlmediakit-pro:feature_all
 
 
 ## 更新记录
+- 2026-3-5
+  - 新增Python混合编程模式。
+  - 新增cookie登录鉴权模式。
+    
 - 2026-2-13
   - 合并最新开源代码，支持Python混合编程模式(仅trt和onnx版本二进制包开启)。
   - 优化mcu多人语音聊天室与ai推理相关功能。
