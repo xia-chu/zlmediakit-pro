@@ -45,7 +45,7 @@ jobs:
                   echo "ci名: $trimmed_line"
                   if ($trimmed_line -ne "${{ github.workflow }}") {
                       echo "ci不匹配"
-                      #exit 1
+                      exit 1
                   }
               }
           }

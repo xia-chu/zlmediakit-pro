@@ -52,7 +52,7 @@ jobs:
               echo "ci名: ${lines[i]}"
               if [ "${lines[i]}" != "${{ github.workflow }}" ]; then
                 echo "ci不匹配"
-                #exit 1
+                exit 1
               fi
             fi
           done
