@@ -10,7 +10,7 @@
 - 邮箱：1213642868@qq.com
 
 ## 注意事项
-zlmediakit pro原则上不提供源码授权，只提供二进制使用授权，用户正式商用需要采购激活码。
+zlmediakit pro原则上不提供源码授权(价格合适可谈)，只提供二进制使用授权，用户正式商用需要采购激活码。
 授权价格请参考[授权定价表](https://github.com/xia-chu/zlmediakit-pro/wiki/%E6%8E%88%E6%9D%83%E5%AE%9A%E4%BB%B7%E8%A1%A8)
 
 ## 怎么开启专业版功能？
