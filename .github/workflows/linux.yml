@@ -48,9 +48,9 @@ jobs:
               echo "BRANCH=${lines[i]}" >> $GITHUB_ENV
             elif [ "$i" -eq 1 ]; then
               echo "ci名: ${lines[i]}"
-              if [ "${lines[i]}" != "${{ github.workflow }}" ]; then
-                echo "ci不匹配"
-                #exit 1
+              if [ "${lines[i]}" != "all" ] && [ "${lines[i]}" != "${{ github.workflow }}" ]; then
+                echo "ci不匹配，且不是all，跳过"
+                exit 1
               fi
             fi
           done

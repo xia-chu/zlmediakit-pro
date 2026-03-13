@@ -32,9 +32,9 @@ jobs:
           echo "ci名: $ci_name"
 
           echo "BRANCH=$branch_name" >> $GITHUB_ENV
-          if [ "$ci_name" != "${{ github.workflow }}" ]; then
-              echo "ci不匹配"
-              #exit 1
+          if [ "$ci_name" != "all" ] && [ "$ci_name" != "${{ github.workflow }}" ]; then
+              echo "ci不匹配，且不是all，跳过"
+              exit 1
           fi
 
       - name: 下载源码

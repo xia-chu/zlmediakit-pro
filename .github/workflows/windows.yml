@@ -43,9 +43,9 @@ jobs:
                   Add-Content -Path $env:GITHUB_ENV -Value "BRANCH=$trimmed_line"
               } elseif ($i -eq 1) {
                   echo "ci名: $trimmed_line"
-                  if ($trimmed_line -ne "${{ github.workflow }}") {
-                      echo "ci不匹配"
-                      #exit 1
+                  if ($trimmed_line -ne "all" -and $trimmed_line -ne "${{ github.workflow }}") {
+                      echo "ci不匹配，且不是all，跳过"
+                      exit 1
                   }
               }
           }
