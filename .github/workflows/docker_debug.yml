@@ -1,0 +1,102 @@
+name: DockerDebug
+
+on:
+  issue_comment:
+    types: [created]  # 监听 issue 评论创建事件
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  USER_NAME: zlmediakit
+  REPO: zlm_dev
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+      # This is used to complete the identity challenge
+      # with sigstore/fulcio when running outside of PRs.
+      id-token: write
+
+    steps:
+      - name: 打印issue评论信息
+        run: |
+          echo "issue number :${{ github.event.issue.number }}"
+          echo "issue 作者 :${{ github.event.comment.user.login }}"
+
+      - name: 过滤issue评论
+        if: github.event.issue.number != 1 || github.event.comment.user.login != 'xia-chu'
+        run: exit 1
+
+      - name: 获取分支和ci名
+        run: |
+          #!/bin/bash
+          set -x
+          input_string="${{ github.event.comment.body }}"
+          
+          # Split into lines and trim each line
+          IFS=' ' read -r -a lines <<< "$input_string"
+          
+          for (( i=0; i<${#lines[@]}; i++ )); do
+            trimmed_line=$(echo "${lines[i]}" | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+            lines[i]="$trimmed_line"
+          done
+          
+          for (( i=0; i<${#lines[@]}; i++ )); do
+            if [ "$i" -eq 0 ]; then
+              echo "分支: ${lines[i]}"
+              echo "BRANCH=${lines[i]}" >> $GITHUB_ENV
+            elif [ "$i" -eq 1 ]; then
+              echo "ci名: ${lines[i]}"
+              if [ "${lines[i]}" != "all" ] && [ "${lines[i]}" != "${{ github.workflow }}" ]; then
+                echo "ci不匹配，且不是all，跳过"
+                exit 1
+              fi
+            fi
+          done
+
+      - name: 下载源码
+        uses: actions/checkout@v2
+        with:
+          repository: xia-chu/zlmediakit-promax
+          fetch-depth: 1
+          ref: ${{ env.BRANCH }}
+          token: ${{ secrets.ACCESS_TOKEN }}
+          path: .
+
+      - name: 下载submodule源码
+        run: mv -f .gitmodules_github .gitmodules && git submodule sync && git submodule update --init
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # Workaround: https://github.com/docker/build-push-action/issues/461
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      # Login against a Docker registry except on PR
+      # https://github.com/docker/login-action
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.USER_NAME }}
+          password: ${{ secrets.DOCKER_IO_SECRET }}
+
+      - name: 设置环境变量
+        run: |
+          echo "TAG=$(echo ${{ env.BRANCH }} | tr -s "/\?%*:|\"<>" "_")" >> $GITHUB_ENV  
+
+      # Build and push Docker image with Buildx (don't push on PR)
+      # https://github.com/docker/build-push-action
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }}_debug
+          file: ./dockerfile_debug
+          platforms: linux/amd64
