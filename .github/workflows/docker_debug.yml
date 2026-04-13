@@ -99,4 +99,4 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }}_debug
           file: ./dockerfile_debug
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
