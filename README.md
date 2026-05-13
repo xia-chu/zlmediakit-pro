@@ -138,7 +138,7 @@ zlmediakit pro原则上不提供源码授权(价格合适可谈)，只提供二�
 ## docker下载
 docker支持x86_64和arm64平台，支持硬件编解码器，支持s3云存储，功能全面。
 ```bash
-docker pull zlmediakit/zlmediakit-pro:feature_all
+docker run -id -p 1935:1935 -p 8080:80 -p 8443:443 -p 8554:554 -p 10000:10000 -p 10000:10000/udp -p 8000:8000/udp -p 9000:9000/udp zlmediakit/zlmediakit-pro:feature_all
 ```
 
 
