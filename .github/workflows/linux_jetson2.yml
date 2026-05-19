@@ -1,4 +1,4 @@
-name: LinuxJetson
+name: LinuxJetson2
 
 on:
   issue_comment:
@@ -107,18 +107,18 @@ jobs:
 
       - name: 启动 Docker 容器, 在Docker 容器中执行脚本
         run: |
-          docker pull --platform linux/arm64 zlmediakit/jetson_dev:agx
-          docker run --platform linux/arm64 -v $(pwd):/root/git -w /root/git --rm zlmediakit/jetson_dev:agx sh -c "
+          docker pull --platform linux/arm64 zlmediakit/jetson_dev:agx2
+          docker run --platform linux/arm64 -v $(pwd):/root/git -w /root/git --rm zlmediakit/jetson_dev:agx2 sh -c "
             #!/bin/bash
             set -x
             apt update
-            apt install -y git cmake libeigen3-dev libssl-dev python3.9 libpython3.9 libpython3.9-dev python3-pip python3.9-distutils libx264-dev libx265-dev libfreetype-dev libfontconfig-dev libharfbuzz-dev libopus-dev libfribidi-dev libmp3lame-dev
-       
+            apt install -y git cmake libeigen3-dev libssl-dev python3.11 libpython3.11 libpython3.11-dev python3-pip python3.11-distutils libx264-dev libx265-dev libfreetype-dev libfontconfig-dev libharfbuzz-dev libopus-dev libfribidi-dev libmp3lame-dev
+          
             python3 --version
             gcc --version
 
-            export PKG_CONFIG_PATH=/home/nvidia/xzl/install/ffmpeg/lib/pkgconfig/:/home/nvidia/xzl/install/opencv/lib/pkgconfig/:/home/nvidia/xzl/install/srtp/lib/pkgconfig/
-            export LD_LIBRARY_PATH=/usr/local/cuda-11.4/targets/aarch64-linux/lib/stubs/:/home/nvidia/xzl/install/ffmpeg/lib/:/home/nvidia/xzl/install/opencv/lib:/home/nvidia/xzl/install/srtp/lib/:/home/nvidia/xzl/install/nvmpi/lib:/home/nvidia/xzl/install/jetson-ffmpeg/stubs
+            export LD_LIBRARY_PATH=/root/xzl/install/lib
+            export PKG_CONFIG_PATH=/root/xzl/install/lib/pkgconfig/
           
             mkdir -p build
             cd build
@@ -133,8 +133,8 @@ jobs:
             -DENABLE_FFMPEG=ON \
             -DENABLE_TESTS=OFF \
             -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc \
-            -DOpenCV_DIR=/home/nvidia/xzl/install/opencv/lib/cmake/opencv4 \
-            -DSRTP_PREFIX=/home/nvidia/xzl/install/srtp \
+            -DOpenCV_DIR=/root/xzl/install/lib/cmake/opencv4 \
+            -DCMAKE_CXX_FLAGS='-Wl,--allow-shlib-undefined' \
             -DENABLE_API=OFF
           
             make -j $(nproc)
@@ -150,7 +150,7 @@ jobs:
             cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/
             cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
             cp -rf 3rdpart/yolov8_trt/cpp/detect/coco.yaml release/linux/Release/
-            cp -rfP /home/nvidia/xzl/install/* release/linux/Release/depends
+            cp -rfP /root/xzl/install/* release/linux/Release/depends
             rm -rf release/linux/Release/lib/*.a
 
           "
@@ -186,7 +186,7 @@ jobs:
                 + '- 编译日期: ${{ env.DATE }}\n' 
                 + '- 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n'
                 + '- 打包ci名: ${{ github.workflow }}\n'
-                + '- 说明: 本二进制适用于英伟达jetpack35嵌入式硬件平台\n' 
+                + '- 说明: 本二进制适用于英伟达jetpack36嵌入式硬件平台\n' 
             })
 
 
