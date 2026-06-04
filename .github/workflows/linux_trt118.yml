@@ -158,7 +158,7 @@ jobs:
             cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/
             cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
             cp -rf 3rdpart/yolov8_trt/cpp/detect/coco.yaml release/linux/Release/
-            cp -rfP 3rdpart/vcpkg/installed/x64-linux-dynamic/lib/*.so* release/linux/Release/lib/
+            cp -rfP 3rdpart/vcpkg/installed/x64-linux-dynamic/lib/*.so* release/linux/Release/depends/lib/
             rm -rf release/linux/Release/depends/lib/*.a
 
           "
