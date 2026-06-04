@@ -118,7 +118,7 @@ jobs:
             #!/bin/bash
             set -x
             apt update
-            apt install -y libeigen3-dev libssl-dev python3.9 libpython3.9-dev python3-pip python3.9-distutils curl zip unzip tar
+            apt install -y git libeigen3-dev libssl-dev python3.9 libpython3.9-dev python3-pip python3.9-distutils curl zip unzip tar
             python3 --version
             gcc --version
 
