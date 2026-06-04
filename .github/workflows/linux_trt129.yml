@@ -119,7 +119,7 @@ jobs:
             set -x
             rm -f /etc/apt/sources.list.d/nv-tensorrt-local-ubuntu2404-10.11.0-cuda-12.9.list
             apt update
-            apt install -y libeigen3-dev libssl-dev python3.12 python3.12-venv libpython3.12-dev python3-pip fonts-noto-cjk
+            apt install -y libeigen3-dev libssl-dev python3.12 python3.12-venv libpython3.12-dev python3-pip fonts-noto-cjk curl zip unzip tar
             python3.12 -m venv ~/venv
             source ~/venv/bin/activate
             python3 --version

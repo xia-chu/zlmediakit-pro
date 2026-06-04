@@ -121,7 +121,7 @@ jobs:
             #!/bin/bash
             set -x
             apt update
-            apt install -y git cmake libeigen3-dev libssl-dev python3.9 libpython3.9 libpython3.9-dev python3-pip python3.9-distutils libx264-dev libx265-dev libfreetype-dev libfontconfig-dev libharfbuzz-dev libopus-dev libfribidi-dev libmp3lame-dev
+            apt install -y git cmake libeigen3-dev libssl-dev python3.9 libpython3.9 libpython3.9-dev python3-pip python3.9-distutils libx264-dev libx265-dev libfreetype-dev libfontconfig-dev libharfbuzz-dev libopus-dev libfribidi-dev libmp3lame-dev curl zip unzip tar
        
             python3 --version
             gcc --version
