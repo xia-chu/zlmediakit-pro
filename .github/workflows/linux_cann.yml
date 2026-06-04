@@ -129,8 +129,7 @@ jobs:
             export LD_LIBRARY_PATH=/root/xzl/install/lib/:/root/xzl/install/lib64/:/usr/local/Ascend/cann-8.5.0/aarch64-linux/devlib/:$LD_LIBRARY_PATH
 
             # 编译安装 aws-sdk-cpp 以开启 s3 云存储  Build aws-sdk-cpp to enable s3 cloud storage
-            apt update
-            apt install -y curl zip unzip tar
+            yum install -y curl zip unzip tar
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
             VCPKG_BUILD_TYPE=release ./vcpkg install aws-crt-cpp aws-sdk-cpp[core,s3,transfer] --triplet arm64-linux-dynamic
