@@ -73,6 +73,15 @@ jobs:
           token: ${{ secrets.ACCESS_TOKEN }}
           path: 3rdpart/yolov8_trt
 
+      - name: 下载vcpkg
+        uses: actions/checkout@v2
+        with:
+          repository: microsoft/vcpkg
+          fetch-depth: 1
+          ref: b27f6bfad367d64f8f0f3296351c5d246e182bb4
+          path: 3rdpart/vcpkg
+          submodules: recursive
+
       - name: 获取git hash
         run: |
           echo "HASH=$(git log -1 --format='%H')" >> $GITHUB_ENV
@@ -118,7 +127,13 @@ jobs:
             source /usr/local/Ascend/cann-8.5.0/set_env.sh
             export PKG_CONFIG_PATH=/root/xzl/install/lib/pkgconfig/:$PKG_CONFIG_PATH
             export LD_LIBRARY_PATH=/root/xzl/install/lib/:/root/xzl/install/lib64/:/usr/local/Ascend/cann-8.5.0/aarch64-linux/devlib/:$LD_LIBRARY_PATH
-            
+
+            # 编译安装 aws-sdk-cpp 以开启 s3 云存储  Build aws-sdk-cpp to enable s3 cloud storage
+            cd 3rdpart/vcpkg
+            ./bootstrap-vcpkg.sh
+            VCPKG_BUILD_TYPE=release ./vcpkg install aws-crt-cpp aws-sdk-cpp[core,s3,transfer] --triplet arm64-linux-dynamic
+            cd ../../
+
             mkdir -p build
             cd build
             cmake .. \
@@ -131,6 +146,9 @@ jobs:
             -DENABLE_WEBRTC=ON \
             -DENABLE_FFMPEG=ON \
             -DENABLE_TESTS=OFF \
+            -DENABLE_S3=ON \
+            -DVCPKG_TARGET_TRIPLET=arm64-linux-dynamic \
+            -DCMAKE_TOOLCHAIN_FILE=/root/git/3rdpart/vcpkg/scripts/buildsystems/vcpkg.cmake \
             -DOpenCV_DIR=/root/xzl/install/lib64/cmake/opencv4 \
             -DCMAKE_CXX_FLAGS='-I/usr/local/Ascend/cann-8.5.0/aarch64-linux/include -L/usr/local/Ascend/cann-8.5.0/aarch64-linux/devlib/' \
             -DENABLE_API=OFF
@@ -139,7 +157,6 @@ jobs:
           
             cd ..
             rm -rf release/linux/Release/*.a
-            mkdir -p release/linux/Release/lib
             mkdir -p release/linux/Release/models 
             mkdir -p release/linux/Release/conf
             mkdir -p release/linux/Release/depends
@@ -149,7 +166,9 @@ jobs:
             cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
             cp -rf 3rdpart/yolov8_trt/cpp/detect/coco.yaml release/linux/Release/
             cp -rfP /root/xzl/install/* release/linux/Release/depends
-            rm -rf release/linux/Release/lib/*.a
+            mkdir -p release/linux/Release/depends/lib
+            cp -rfP 3rdpart/vcpkg/installed/arm64-linux-dynamic/lib/*.so* release/linux/Release/depends/lib/
+            rm -rf release/linux/Release/depends/lib/*.a
 
           "
 
