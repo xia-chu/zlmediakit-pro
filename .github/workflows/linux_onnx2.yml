@@ -436,8 +436,9 @@ jobs:
         with:
           github-token: ${{ secrets.ACCESS_TOKEN }}
           script: |
+            for (const issue_number of [3, 6])
             github.rest.issues.createComment({
-              issue_number: 3,
+              issue_number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: '- 下载地址: [${{ github.workflow }}_${{ env.TAG }}_${{ env.DATE }}](${{ steps.upload.outputs.artifact-url }})\n'
