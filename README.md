@@ -15,7 +15,7 @@ zlmediakit pro原则上不提供源码授权(价格合适可谈)，只提供二�
 
 ## 怎么开启专业版功能？
 - 下载程序：
-  点击[下载链接](https://github.com/xia-chu/zlmediakit-pro/issues/3), 选择您试用系统对应的程序包。
+  点击[下载链接](https://github.com/xia-chu/zlmediakit-pro/issues), 选择您试用系统对应的程序包。
 
 - 程序的试用：
   程序启动时会触发联网激活试用，每台机器默认支持15天全功能全额度试用；试用必须在非docker环境内开启，每台机器默认只能试用一次。
