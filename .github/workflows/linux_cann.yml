@@ -205,7 +205,7 @@ jobs:
                 + '- 编译日期: ${{ env.DATE }}\n' 
                 + '- 编译记录: [${{ github.run_id }}](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})\n'
                 + '- 打包ci名: ${{ github.workflow }}\n'
-                + '- 说明: 本二进制在 ubuntu20.04(x64) 上编译，开启tensorrt11.8(gpu) ai推理；请参考[wiki](https://github.com/xia-chu/zlmediakit-pro/wiki/Linux-tensorRT11.8%E6%8E%A8%E7%90%86%E6%95%99%E7%A8%8B)部署运行\n' 
+                + '- 说明: 本二进制在 openEuler 22.03 LTS 上编译，开启cann8.5(gpu) ai推理\n' 
             })
 
 
