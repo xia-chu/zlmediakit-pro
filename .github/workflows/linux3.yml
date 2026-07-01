@@ -127,6 +127,14 @@ jobs:
           path: 3rdpart/vcpkg
           submodules: recursive
 
+      - name: 缓存 vcpkg installed
+        uses: actions/cache@v4
+        with:
+          path: 3rdpart/vcpkg/installed
+          key: vcpkg-Linux3-b27f6bfad367d64f8f0f3296351c5d246e182bb4-${{ hashFiles('3rdpart/vcpkg/installed/**') }}
+          restore-keys: |
+            vcpkg-Linux3-b27f6bfad367d64f8f0f3296351c5d246e182bb4-
+
       - name: 启动 Docker 容器, 在Docker 容器中执行脚本
         run: |
           docker pull centos:7

@@ -90,6 +90,14 @@ jobs:
           sudo make install
           echo "ONNXRUNTIME_ROOT=/usr/local/" >> $GITHUB_ENV
 
+      - name: 缓存 vcpkg installed
+        uses: actions/cache@v4
+        with:
+          path: vcpkg/installed
+          key: vcpkg-macOS_onnx-arm64-osx-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-${{ hashFiles('vcpkg/installed/**') }}
+          restore-keys: |
+            vcpkg-macOS_onnx-arm64-osx-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-
+
       - name: 配置 vcpkg
         uses: lukka/run-vcpkg@v7
         with:
