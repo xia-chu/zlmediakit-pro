@@ -1,0 +1,171 @@
+name: DockerCann
+
+on:
+  issue_comment:
+    types: [ created ]  # 监听 issue 评论创建事件
+
+env:
+  # Use docker.io for Docker Hub if empty
+  REGISTRY: docker.io
+  USER_NAME: zlmediakit
+  REPO: zlm_dev
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      actions: read  # 读取其他 workflow 的 artifacts
+
+    steps:
+      - name: 打印issue评论信息
+        run: |
+          echo "issue number :${{ github.event.issue.number }}"
+          echo "issue 作者 :${{ github.event.comment.user.login }}"
+
+      - name: 过滤issue评论
+        if: github.event.issue.number != 1 || github.event.comment.user.login != 'xia-chu'
+        run: exit 1
+
+      - name: 获取分支、ci名和可选的 LinuxCann run_id
+        run: |
+          #!/bin/bash
+          set -x
+          input_string="${{ github.event.comment.body }}"
+          
+          # Split into lines and trim each line
+          IFS=' ' read -r -a lines <<< "$input_string"
+          
+          for (( i=0; i<${#lines[@]}; i++ )); do
+            trimmed_line=$(echo "${lines[i]}" | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+            lines[i]="$trimmed_line"
+          done
+          
+          for (( i=0; i<${#lines[@]}; i++ )); do
+            if [ "$i" -eq 0 ]; then
+              echo "分支: ${lines[i]}"
+              echo "BRANCH=${lines[i]}" >> $GITHUB_ENV
+            elif [ "$i" -eq 1 ]; then
+              echo "ci名: ${lines[i]}"
+              if [ "${lines[i]}" != "all" ] && [ "${lines[i]}" != "${{ github.workflow }}" ]; then
+                echo "ci不匹配，且不是all，跳过"
+                exit 1
+              fi
+            elif [ "$i" -eq 2 ] && [ -n "${lines[i]}" ]; then
+              echo "LinuxCann run_id: ${lines[i]}"
+              echo "CANN_RUN_ID=${lines[i]}" >> $GITHUB_ENV
+            fi
+          done
+
+      - name: 获取 LinuxCann run_id
+        run: |
+          #!/bin/bash
+          set -x
+          if [ -z "${CANN_RUN_ID}" ]; then
+            # 自动查找该分支最新的成功 LinuxCann 运行  Auto-detect latest successful LinuxCann run
+            RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
+              "https://api.github.com/repos/${{ github.repository }}/actions/workflows/linux_cann.yml/runs?branch=${{ env.BRANCH }}&status=success&per_page=1")
+            CANN_RUN_ID=$(echo "$RESPONSE" | jq -r '.workflow_runs[0].id // empty')
+            if [ -z "$CANN_RUN_ID" ]; then
+              echo "未找到分支 ${{ env.BRANCH }} 的成功 LinuxCann 运行，请检查分支名或手动提供 run_id"
+              exit 1
+            fi
+            echo "CANN_RUN_ID=${CANN_RUN_ID}" >> $GITHUB_ENV
+          fi
+          echo "使用 LinuxCann run_id: ${CANN_RUN_ID}"
+
+      - name: 下载 LinuxCann 编译产出
+        run: |
+          #!/bin/bash
+          set -x
+          # 列出 artifacts  List artifacts for this run
+          ARTIFACTS=$(curl -s -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/${CANN_RUN_ID}/artifacts")
+          
+          # 找到第一个 artifact 的下载 URL  Find the first artifact download URL
+          DOWNLOAD_URL=$(echo "$ARTIFACTS" | jq -r '.artifacts[0].archive_download_url // empty')
+          if [ -z "$DOWNLOAD_URL" ]; then
+            echo "未找到 artifact，请确认 LinuxCann 运行已成功完成"
+            exit 1
+          fi
+          
+          ARTIFACT_NAME=$(echo "$ARTIFACTS" | jq -r '.artifacts[0].name')
+          echo "下载 artifact: ${ARTIFACT_NAME}"
+          
+          # 下载 artifact zip  Download artifact zip
+          curl -s -L -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
+            -o artifact.zip "$DOWNLOAD_URL"
+          
+          # 解压: zip 内含 release.tar.gz，tar 内含 linux/Release/...
+          unzip -o artifact.zip
+          mkdir -p release/linux
+          tar -xzf release.tar.gz -C release/linux
+          rm -f artifact.zip release.tar.gz
+          
+          echo "Release 目录内容:"
+          ls -la release/linux/Release/
+
+      - name: 设置QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Setup Docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.USER_NAME }}
+          password: ${{ secrets.DOCKER_IO_SECRET }}
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/hostedtoolcache
+          sudo docker system prune -af || true
+          df -h
+
+      - name: 准备 Docker 构建上下文
+        run: |
+          RELEASE_DIR=release/linux/Release
+          # 生成 start.sh 启动脚本
+          echo '#!/bin/bash' > ${RELEASE_DIR}/start.sh
+          echo 'export LD_LIBRARY_PATH=./depends/lib:./depends/ffmpeg/lib/:./depends/opencv/lib/:./depends/lib64/' >> ${RELEASE_DIR}/start.sh
+          echo 'export PYTHONPATH=./python' >> ${RELEASE_DIR}/start.sh
+          echo 'source /usr/local/Ascend/cann-8.5.0/set_env.sh' >> ${RELEASE_DIR}/start.sh
+          echo 'exec ./MediaServer -s default.pem -c ./conf/config.ini -l 1' >> ${RELEASE_DIR}/start.sh
+          chmod +x ${RELEASE_DIR}/start.sh
+          # 生成 Dockerfile
+          echo 'FROM --platform=linux/arm64 zlmediakit/cann:8.5' > ${RELEASE_DIR}/Dockerfile
+          echo '' >> ${RELEASE_DIR}/Dockerfile
+          echo 'EXPOSE 1935/tcp' >> ${RELEASE_DIR}/Dockerfile
+          echo 'EXPOSE 554/tcp' >> ${RELEASE_DIR}/Dockerfile
+          echo 'EXPOSE 80/tcp' >> ${RELEASE_DIR}/Dockerfile
+          echo 'EXPOSE 443/tcp' >> ${RELEASE_DIR}/Dockerfile
+          echo 'EXPOSE 10000/udp' >> ${RELEASE_DIR}/Dockerfile
+          echo 'EXPOSE 10000/tcp' >> ${RELEASE_DIR}/Dockerfile
+          echo 'EXPOSE 8000/udp' >> ${RELEASE_DIR}/Dockerfile
+          echo 'EXPOSE 8000/tcp' >> ${RELEASE_DIR}/Dockerfile
+          echo 'EXPOSE 9000/udp' >> ${RELEASE_DIR}/Dockerfile
+          echo '' >> ${RELEASE_DIR}/Dockerfile
+          echo 'RUN pip3 install --no-cache-dir "boto3>=1.28.0" "kafka-python>=2.0.2" attrs cython "numpy==1.24.0" decorator sympy cffi pyyaml pathlib2 psutil scipy requests absl-py' >> ${RELEASE_DIR}/Dockerfile
+          echo '' >> ${RELEASE_DIR}/Dockerfile
+          echo 'WORKDIR /opt/media/bin' >> ${RELEASE_DIR}/Dockerfile
+          echo '' >> ${RELEASE_DIR}/Dockerfile
+          echo 'COPY . /opt/media/bin' >> ${RELEASE_DIR}/Dockerfile
+          echo '' >> ${RELEASE_DIR}/Dockerfile
+          echo 'CMD ["/opt/media/bin/start.sh"]' >> ${RELEASE_DIR}/Dockerfile
+
+      - name: 构建并推送 Docker 镜像
+        id: build-and-push
+        uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
+        with:
+          context: release/linux/Release
+          file: release/linux/Release/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:cann_release
+          platforms: linux/arm64
