@@ -74,7 +74,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: vcpkg/installed
-          key: vcpkg-Windows-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-${{ hashFiles('vcpkg/installed/**') }}
+          # Bump version (v1 → v2 ...) when vcpkgArguments change to force cache refresh.
+          # 当 vcpkgArguments 变更时，递增版本号以强制刷新缓存。
+          key: vcpkg-Windows-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-v1
           restore-keys: |
             vcpkg-Windows-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-
 

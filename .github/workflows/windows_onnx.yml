@@ -101,7 +101,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: vcpkg/installed
-          key: vcpkg-Windows_onnx-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-${{ hashFiles('vcpkg/installed/**') }}
+          # Bump version (v1 → v2 ...) when vcpkgArguments change to force cache refresh.
+          key: vcpkg-Windows_onnx-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-v1
           restore-keys: |
             vcpkg-Windows_onnx-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-
 

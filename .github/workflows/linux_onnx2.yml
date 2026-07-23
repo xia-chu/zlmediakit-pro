@@ -154,7 +154,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: 3rdpart/vcpkg/installed
-          key: vcpkg-Linux_onnx2-b27f6bfad367d64f8f0f3296351c5d246e182bb4-${{ hashFiles('3rdpart/vcpkg/installed/**') }}
+          # Bump version (v1 → v2 ...) when vcpkg install arguments change to force cache refresh.
+          key: vcpkg-Linux_onnx2-b27f6bfad367d64f8f0f3296351c5d246e182bb4-v1
           restore-keys: |
             vcpkg-Linux_onnx2-b27f6bfad367d64f8f0f3296351c5d246e182bb4-
 
