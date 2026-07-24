@@ -12,7 +12,14 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        include:
+          - platform: linux/amd64
+            runner: ubuntu-22.04
+          - platform: linux/arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
       packages: write
@@ -69,9 +76,6 @@ jobs:
       - name: 下载submodule源码
         run: mv -f .gitmodules_github .gitmodules && git submodule sync && git submodule update --init
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
       # Workaround: https://github.com/docker/build-push-action/issues/461
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v3
@@ -88,15 +92,51 @@ jobs:
       - name: 设置环境变量
         run: |
           echo "TAG=$(echo ${{ env.BRANCH }} | tr -s "/\?%*:|\"<>" "_")" >> $GITHUB_ENV  
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_TAG=${platform//\//-}" >> $GITHUB_ENV
 
-      # Build and push Docker image with Buildx (don't push on PR)
+      # Build and push Docker image with Buildx
       # https://github.com/docker/build-push-action
       - name: Build and push Docker image
         id: build-and-push
         uses: docker/build-push-action@ac9327eae2b366085ac7f6a2d02df8aa8ead720a
         with:
           context: .
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }}
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }}-${{ env.PLATFORM_TAG }}
           file: ./dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: ${{ matrix.platform }}
+
+  merge:
+    runs-on: ubuntu-22.04
+    needs: build
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: 过滤issue评论
+        if: github.event.issue.number != 1 || github.event.comment.user.login != 'xia-chu'
+        run: exit 1
+
+      - name: 获取分支名
+        run: |
+          input_string="${{ github.event.comment.body }}"
+          BRANCH=$(echo "$input_string" | head -1 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+          echo "BRANCH=$BRANCH" >> $GITHUB_ENV
+
+      - name: 设置环境变量
+        run: |
+          echo "TAG=$(echo ${{ env.BRANCH }} | tr -s "/\?%*:|\"<>" "_")" >> $GITHUB_ENV
+
+      - name: Log into registry ${{ env.REGISTRY }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ env.USER_NAME }}
+          password: ${{ secrets.DOCKER_IO_SECRET }}
+
+      - name: Create multi-arch manifest
+        run: |
+          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }} \
+            ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }}-linux-amd64 \
+            ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }}-linux-arm64
