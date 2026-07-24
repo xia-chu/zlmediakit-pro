@@ -140,3 +140,12 @@ jobs:
           docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }} \
             ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }}-linux-amd64 \
             ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:${{ env.TAG }}-linux-arm64
+
+      - name: 删除平台特定tag
+        run: |
+          TOKEN=$(curl -s -H "Content-Type: application/json" -X POST -d '{"username": "${{ env.USER_NAME }}", "password": "${{ secrets.DOCKER_IO_SECRET }}"}' https://hub.docker.com/v2/users/login/ | jq -r '.token')
+          for TAG_SUFFIX in linux-amd64 linux-arm64; do
+            curl -s -X DELETE -H "Authorization: Bearer $TOKEN" \
+              "https://hub.docker.com/v2/repositories/${{ env.USER_NAME }}/${{ env.REPO }}/tags/${{ env.TAG }}-${TAG_SUFFIX}/"
+            echo "Deleted tag: ${{ env.TAG }}-${TAG_SUFFIX}"
+          done
