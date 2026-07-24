@@ -121,7 +121,7 @@ jobs:
       - name: 获取分支名
         run: |
           input_string="${{ github.event.comment.body }}"
-          BRANCH=$(echo "$input_string" | head -1 | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
+          BRANCH=$(echo "$input_string" | awk '{print $1}' | sed -e 's/^[ \t]*//' -e 's/[ \t]*$//')
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
 
       - name: 设置环境变量
