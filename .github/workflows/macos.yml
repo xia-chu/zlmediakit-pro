@@ -68,7 +68,7 @@ jobs:
         with:
           path: vcpkg/installed
           # Bump version (v1 → v2 ...) when vcpkgArguments change to force cache refresh.
-          key: vcpkg-macOS-arm64-osx-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-v1
+          key: vcpkg-macOS-arm64-osx-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-v2
           restore-keys: |
             vcpkg-macOS-arm64-osx-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-
 
@@ -78,7 +78,7 @@ jobs:
           vcpkgDirectory: '${{github.workspace}}/vcpkg'
           vcpkgTriplet: arm64-osx-release
           vcpkgGitCommitId: 'e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb'
-          vcpkgArguments: 'openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,aom,openh264,vpx] aws-crt-cpp aws-sdk-cpp[core,s3,transfer]'
+          vcpkgArguments: 'opus openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,aom,openh264,vpx] aws-crt-cpp aws-sdk-cpp[core,s3,transfer]'
 
       - name: 编译
         uses: lukka/run-cmake@v3
