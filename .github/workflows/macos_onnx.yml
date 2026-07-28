@@ -90,12 +90,19 @@ jobs:
           sudo make install
           echo "ONNXRUNTIME_ROOT=/usr/local/" >> $GITHUB_ENV
 
+      - name: 下载 overlay ports (提供 libaec GitHub 镜像以绕过 gitlab.dkrz.de 限流)
+        uses: actions/checkout@v2
+        with:
+          repository: xia-chu/zlmediakit-pro
+          fetch-depth: 1
+          path: zlmediakit-pro-overlay
+
       - name: 缓存 vcpkg installed
         uses: actions/cache@v4
         with:
           path: vcpkg/installed
           # Bump version (v1 → v2 ...) when vcpkgArguments change to force cache refresh.
-          key: vcpkg-macOS_onnx-arm64-osx-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-v2
+          key: vcpkg-macOS_onnx-arm64-osx-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-v3
           restore-keys: |
             vcpkg-macOS_onnx-arm64-osx-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-
 
@@ -105,7 +112,7 @@ jobs:
           vcpkgDirectory: '${{github.workspace}}/vcpkg'
           vcpkgTriplet: arm64-osx-release
           vcpkgGitCommitId: 'e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb'
-          vcpkgArguments: 'opus eigen3 openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,aom,openh264,vpx] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] opencv[contrib,core,dnn,freetype]'
+          vcpkgArguments: '--overlay-ports=${{github.workspace}}/zlmediakit-pro-overlay/vcpkg-overlay-ports opus eigen3 openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,aom,openh264,vpx] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] opencv[contrib,core,dnn,freetype]'
 
       - name: 检查并设置 Python 3.11
         run: |
