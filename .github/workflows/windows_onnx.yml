@@ -102,7 +102,7 @@ jobs:
         with:
           path: vcpkg/installed
           # Bump version (v1 → v2 ...) when vcpkgArguments change to force cache refresh.
-          key: vcpkg-Windows_onnx-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-v1
+          key: vcpkg-Windows_onnx-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-v2
           restore-keys: |
             vcpkg-Windows_onnx-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-
 
@@ -112,7 +112,7 @@ jobs:
           vcpkgDirectory: '${{github.workspace}}/vcpkg'
           vcpkgTriplet: x64-windows-release
           # 2025.11.2
-          vcpkgGitCommitId: 'e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb'
+          vcpkgGitCommitId: 'b81cab76a175645e047601da8f982ad86bff1cc3'
           vcpkgArguments: 'pkgconf eigen3 openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,nvcodec,qsv,amf,aom,dav1d,opencl,opengl,openh264,vpx,vulkan] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] opencv4[contrib,core,dnn,freetype] onnxruntime-gpu'
 
       - name: 编译
