@@ -87,7 +87,7 @@ jobs:
         with:
           path: 3rdpart/vcpkg/installed
           # Bump version (v1 → v2 ...) when vcpkg install arguments change to force cache refresh.
-          key: vcpkg-Linux_trt118-b27f6bfad367d64f8f0f3296351c5d246e182bb4-v1
+          key: vcpkg-Linux_trt118-b27f6bfad367d64f8f0f3296351c5d246e182bb4-v2
           restore-keys: |
             vcpkg-Linux_trt118-b27f6bfad367d64f8f0f3296351c5d246e182bb4-
 
@@ -134,7 +134,7 @@ jobs:
             # 编译安装 aws-sdk-cpp 以开启 s3 云存储  Build aws-sdk-cpp to enable s3 cloud storage
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
-            VCPKG_BUILD_TYPE=release ./vcpkg install aws-crt-cpp aws-sdk-cpp[core,s3,transfer] --triplet x64-linux-dynamic
+            VCPKG_BUILD_TYPE=release ./vcpkg install opus aws-crt-cpp aws-sdk-cpp[core,s3,transfer] --triplet x64-linux-dynamic
             cd ../../
 
             mkdir -p build
