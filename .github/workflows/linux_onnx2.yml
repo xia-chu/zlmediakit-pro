@@ -155,7 +155,7 @@ jobs:
         with:
           path: 3rdpart/vcpkg/installed
           # Bump version (v1 → v2 ...) when vcpkg install arguments change to force cache refresh.
-          key: vcpkg-Linux_onnx2-b27f6bfad367d64f8f0f3296351c5d246e182bb4-v1
+          key: vcpkg-Linux_onnx2-b27f6bfad367d64f8f0f3296351c5d246e182bb4-v2
           restore-keys: |
             vcpkg-Linux_onnx2-b27f6bfad367d64f8f0f3296351c5d246e182bb4-
 
@@ -321,7 +321,7 @@ jobs:
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
             CFLAGS='-std=gnu99 -DTIOCGPTPEER=0x5441' CXXFLAGS='-std=gnu++11 -DTIOCGPTPEER=0x5441' VCPKG_BUILD_TYPE=release ./vcpkg install pkgconf eigen3 opencv4[core,contrib,freetype,dnn] --triplet x64-linux-dynamic
-            CFLAGS='-std=gnu99 -DTIOCGPTPEER=0x5441' CXXFLAGS='-std=gnu++11 -DTIOCGPTPEER=0x5441' VCPKG_BUILD_TYPE=release ./vcpkg install openssl amd-amf mp3lame aom aws-crt-cpp aws-sdk-cpp[core,s3,transfer] brotli \
+            CFLAGS='-std=gnu99 -DTIOCGPTPEER=0x5441' CXXFLAGS='-std=gnu++11 -DTIOCGPTPEER=0x5441' VCPKG_BUILD_TYPE=release ./vcpkg install opus openssl amd-amf mp3lame aom aws-crt-cpp aws-sdk-cpp[core,s3,transfer] brotli \
               bzip2[core,tool] curl[core,non-http,openssl,ssl] dirent expat ffnvcodec fontconfig freetype[brotli,bzip2,core,png,zlib] \
               fribidi gperf harfbuzz[core,freetype] jemalloc libiconv libpng libsrtp[core,openssl] libuuid libvpx mfx-dispatch \
               opencl openh264 opus pkgconf pthread pthreads s2n vulkan-headers x264[asm,core,gpl] x265 zlib --triplet x64-linux-dynamic
