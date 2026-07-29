@@ -97,6 +97,18 @@ jobs:
         run: echo $Env:PYTHON_EXECUTABLE
         shell: pwsh
 
+      - name: 安装 CUDA Toolkit
+        uses: Jimver/cuda-toolkit@v0.2.21
+        with:
+          cuda: '12.4.0'
+          method: 'network'
+          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "cusparse", "cusparse_dev"]'
+
+      - name: 检查 CUDA
+        run: |
+          nvcc --version
+          echo "CUDA_PATH=$env:CUDA_PATH"
+
       - name: 缓存 vcpkg installed
         uses: actions/cache@v4
         with:
