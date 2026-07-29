@@ -100,9 +100,9 @@ jobs:
       - name: 安装 CUDA Toolkit
         uses: Jimver/cuda-toolkit@v0.2.21
         with:
-          cuda: '12.4.0'
+          cuda: '12.9.0'
           method: 'network'
-          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "cusparse", "cusparse_dev"]'
+          sub-packages: '["nvcc", "cudart", "cublas", "cublas_dev", "cusparse", "cusparse_dev", "cudnn", "cudnn_dev"]'
 
       - name: 检查 CUDA
         run: |
