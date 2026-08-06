@@ -102,9 +102,9 @@ jobs:
         with:
           path: vcpkg/installed
           # Bump version (v1 → v2 ...) when vcpkgArguments change to force cache refresh.
-          key: vcpkg-Windows_onnx-x64-windows-release-7c9a4f81d2e56b3098ac1f47e5d2b6a9c8f013de-v2
+          key: vcpkg-Windows_onnx-x64-windows-release-9e4b7d2a61f8c35b0d4a7e91c2f6b8d5e3a1f709-v2
           restore-keys: |
-            vcpkg-Windows_onnx-x64-windows-release-7c9a4f81d2e56b3098ac1f47e5d2b6a9c8f013de-
+            vcpkg-Windows_onnx-x64-windows-release-9e4b7d2a61f8c35b0d4a7e91c2f6b8d5e3a1f709-
 
       - name: 配置 vcpkg
         uses: lukka/run-vcpkg@v7
@@ -113,7 +113,7 @@ jobs:
           vcpkgTriplet: x64-windows-release
           # 2026.8.6
           vcpkgGitCommitId: 'eaca4a577b6b678c6e10252754b6988a61746c19'
-          vcpkgArguments: 'pkgconf eigen3 openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,nvcodec,qsv,amf,aom,dav1d,opencl,opengl,openh264,vpx,vulkan] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] opencv4[contrib,core,dnn,freetype] onnxruntime-gpu'
+          vcpkgArguments: 'pkgconf eigen3 openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,nvcodec,qsv,amf,aom,dav1d,opencl,opengl,openh264,vpx,vulkan] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] opencv4[contrib,core,dnn,freetype] onnxruntime'
 
       - name: 编译
         uses: lukka/run-cmake@v3
