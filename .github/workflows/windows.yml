@@ -76,17 +76,17 @@ jobs:
           path: vcpkg/installed
           # Bump version (v1 → v2 ...) when vcpkgArguments change to force cache refresh.
           # 当 vcpkgArguments 变更时，递增版本号以强制刷新缓存。
-          key: vcpkg-Windows-x64-windows-release-8f4a9d7c6b2e1f3098ab4c5d6e7f891234567890-v1
+          key: vcpkg-Windows-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-v1
           restore-keys: |
-            vcpkg-Windows-x64-windows-release-8f4a9d7c6b2e1f3098ab4c5d6e7f891234567890-
+            vcpkg-Windows-x64-windows-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-
 
       - name: 配置 vcpkg
         uses: lukka/run-vcpkg@v7
         with:
           vcpkgDirectory: '${{github.workspace}}/vcpkg'
           vcpkgTriplet: x64-windows-release
-          # 2026.8.6
-          vcpkgGitCommitId: 'eaca4a577b6b678c6e10252754b6988a61746c19'
+          # 2025.11.2
+          vcpkgGitCommitId: 'e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb'
           vcpkgArguments: 'openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,nvcodec,qsv,amf,aom,dav1d,opencl,opengl,openh264,vpx,vulkan] aws-crt-cpp aws-sdk-cpp[core,s3,transfer]'
 
       - name: 编译
