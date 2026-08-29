@@ -152,7 +152,7 @@ jobs:
             -DENABLE_CANN=ON \
             -DBUILD_SHARED_LIBS=off \
             -DENABLE_AI=ON \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=Debug \
             -DENABLE_WEBRTC=ON \
             -DENABLE_FFMPEG=ON \
             -DENABLE_TESTS=OFF \
@@ -166,19 +166,20 @@ jobs:
             make -j $(nproc)
           
             cd ..
-            rm -rf release/linux/Release/*.a
-            mkdir -p release/linux/Release/models 
-            mkdir -p release/linux/Release/conf
-            mkdir -p release/linux/Release/depends
+            rm -rf release/linux/Debug/*.a
+            mkdir -p release/linux/Debug/models 
+            mkdir -p release/linux/Debug/conf
+            mkdir -p release/linux/Debug/depends
           
-            cp -rf conf/* release/linux/Release/conf 
-            cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/
-            cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
-            cp -rf 3rdpart/yolov8_trt/cpp/detect/coco.yaml release/linux/Release/
-            cp -rfP /root/xzl/install/* release/linux/Release/depends
-            mkdir -p release/linux/Release/depends/lib
-            cp -rfP 3rdpart/vcpkg/installed/arm64-linux-dynamic/lib/*.so* release/linux/Release/depends/lib/
-            rm -rf release/linux/Release/depends/lib/*.a
+            cp -rf conf/* release/linux/Debug/conf 
+            cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Debug/models/
+            cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Debug/
+            cp -rf 3rdpart/yolov8_trt/cpp/detect/coco.yaml release/linux/Debug/
+            cp -rfP /root/xzl/install/* release/linux/Debug/depends
+            mkdir -p release/linux/Debug/depends/lib
+            cp -rfP 3rdpart/vcpkg/installed/arm64-linux-dynamic/lib/*.so* release/linux/Debug/depends/lib/
+            rm -rf release/linux/Debug/depends/lib/*.a
+            mv release/linux/Debug release/linux/Release
 
           "
 
