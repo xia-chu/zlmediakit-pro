@@ -148,7 +148,7 @@ jobs:
           echo 'EXPOSE 8000/tcp' >> ${RELEASE_DIR}/Dockerfile
           echo 'EXPOSE 9000/udp' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
-          echo 'RUN apt-get update && apt-get install -y --no-install-recommends python3-pip libpython3.9 && rm -rf /var/lib/apt/lists/*' >> ${RELEASE_DIR}/Dockerfile
+          echo 'RUN apt-get update && apt-get install -y --no-install-recommends python3-pip libpython3.9 libpython3.9-stdlib && rm -rf /var/lib/apt/lists/*' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'RUN pip3 install --no-cache-dir "boto3>=1.28.0" "kafka-python>=2.0.2" attrs cython "numpy==1.24.0" decorator sympy cffi pyyaml pathlib2 psutil scipy requests absl-py' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
