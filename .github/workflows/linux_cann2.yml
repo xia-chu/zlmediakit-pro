@@ -136,11 +136,14 @@ jobs:
             source /usr/local/Ascend/cann-8.5.0/set_env.sh
             export LD_LIBRARY_PATH=/usr/local/Ascend/cann-8.5.0/aarch64-linux/devlib/:$LD_LIBRARY_PATH
 
-            # openEuler 镜像的 update 系列仓库（update/update-source 等）元数据偶发校验和不匹配，
-            # 改用白名单方式：禁用全部仓库，只启用验证正常的 OS/everything/EPOL（所需包均在其中）
+            # openEuler 官方源偶发 502/504 和 HTTP/2 帧错误导致元数据下载失败，
+            # 切换到华为云镜像源并关闭 metalink；仓库采用白名单：只启用 OS/everything/EPOL
+            sed -i 's|https\?://repo.openeuler.org|https://mirrors.huaweicloud.com/openeuler|g; s|https\?://mirrors.openeuler.org|https://mirrors.huaweicloud.com/openeuler|g' /etc/yum.repos.d/*.repo
             yum clean all || true
             # vcpkg 从源码构建 ffmpeg 依赖（如 gperf）还需要 autotools 工具链
-            yum install -y --disablerepo='*' --enablerepo=OS,everything,EPOL git curl zip unzip tar pkg-config make autoconf autoconf-archive automake libtool
+            for i in 1 2 3; do
+              yum install -y --setopt=metadata_expire=3600 --disablerepo='*' --enablerepo=OS,everything,EPOL git curl zip unzip tar pkg-config make autoconf autoconf-archive automake libtool && break || { yum clean all || true; sleep 5; }
+            done
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
             VCPKG_BUILD_TYPE=release ./vcpkg install ffmpeg --triplet arm64-linux-dynamic
