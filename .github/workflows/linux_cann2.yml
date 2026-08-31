@@ -1,4 +1,4 @@
-name: LinuxCann
+name: LinuxCann2
 
 on:
   issue_comment:
@@ -87,9 +87,9 @@ jobs:
         with:
           path: 3rdpart/vcpkg/installed
           # Bump version (v1 → v2 ...) when vcpkg install arguments change to force cache refresh.
-          key: vcpkg-LinuxCann-b27f6bfad367d64f8f0f3296351c5d246e182bb4-v1
+          key: vcpkg-LinuxCann-b27f6bfad367d64f8f0f3296351c5d246e182bb42-v1
           restore-keys: |
-            vcpkg-LinuxCann-b27f6bfad367d64f8f0f3296351c5d246e182bb4-
+            vcpkg-LinuxCann-b27f6bfad367d64f8f0f3296351c5d246e182bb42-
 
       - name: 获取git hash
         run: |
@@ -134,32 +134,37 @@ jobs:
             gcc --version
 
             source /usr/local/Ascend/cann-8.5.0/set_env.sh
-            export PKG_CONFIG_PATH=/root/xzl/install/lib/pkgconfig/:$PKG_CONFIG_PATH
-            export LD_LIBRARY_PATH=/root/xzl/install/lib/:/root/xzl/install/lib64/:/usr/local/Ascend/cann-8.5.0/aarch64-linux/devlib/:$LD_LIBRARY_PATH
+            export LD_LIBRARY_PATH=/usr/local/Ascend/cann-8.5.0/aarch64-linux/devlib/:$LD_LIBRARY_PATH
 
-            # 编译安装 aws-sdk-cpp 以开启 s3 云存储  Build aws-sdk-cpp to enable s3 cloud storage
-            yum install -y --disablerepo='*' --enablerepo=OS,everything,EPOL git curl zip unzip tar
+            # openEuler 镜像的 update 系列仓库（update/update-source 等）元数据偶发校验和不匹配，
+            # 改用白名单方式：禁用全部仓库，只启用验证正常的 OS/everything/EPOL（所需包均在其中）
+            yum clean all || true
+            # vcpkg 从源码构建 ffmpeg 依赖（如 gperf）还需要 autotools 工具链
+            yum install -y --disablerepo='*' --enablerepo=OS,everything,EPOL git curl zip unzip tar pkg-config make autoconf autoconf-archive automake libtool
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
-            VCPKG_BUILD_TYPE=release ./vcpkg install aws-crt-cpp aws-sdk-cpp[core,s3,transfer] --triplet arm64-linux-dynamic
+            VCPKG_BUILD_TYPE=release ./vcpkg install ffmpeg --triplet arm64-linux-dynamic
             cd ../../
+
+            # ffmpeg 均由 vcpkg 提供，pkg-config 指向 vcpkg 安装目录（cmake 的 pkg_check_modules 依赖此路径）
+            export PKG_CONFIG_PATH=/root/git/3rdpart/vcpkg/installed/arm64-linux-dynamic/lib/pkgconfig/:$PKG_CONFIG_PATH
 
             mkdir -p build
             cd build
             cmake .. \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -DPYTHON_EXECUTABLE=$(which python3) \
-            -DENABLE_CANN=ON \
+            -DENABLE_CANN=OFF \
+            -DENABLE_PYTHON=ON \
             -DBUILD_SHARED_LIBS=off \
-            -DENABLE_AI=ON \
+            -DENABLE_AI=OFF \
             -DCMAKE_BUILD_TYPE=Release \
             -DENABLE_WEBRTC=ON \
             -DENABLE_FFMPEG=ON \
             -DENABLE_TESTS=OFF \
-            -DENABLE_S3=ON \
+            -DENABLE_S3=OFF \
             -DVCPKG_TARGET_TRIPLET=arm64-linux-dynamic \
             -DCMAKE_TOOLCHAIN_FILE=/root/git/3rdpart/vcpkg/scripts/buildsystems/vcpkg.cmake \
-            -DOpenCV_DIR=/root/xzl/install/lib64/cmake/opencv4 \
             -DCMAKE_CXX_FLAGS='-I/usr/local/Ascend/cann-8.5.0/aarch64-linux/include -L/usr/local/Ascend/cann-8.5.0/aarch64-linux/devlib/' \
             -DENABLE_API=OFF
           
@@ -175,7 +180,6 @@ jobs:
             cp -rf 3rdpart/yolov8_trt/cpp/detect/onnx_model/* release/linux/Release/models/
             cp -rf 3rdpart/yolov8_trt/cpp/detect/python release/linux/Release/
             cp -rf 3rdpart/yolov8_trt/cpp/detect/coco.yaml release/linux/Release/
-            cp -rfP /root/xzl/install/* release/linux/Release/depends
             mkdir -p release/linux/Release/depends/lib
             cp -rfP 3rdpart/vcpkg/installed/arm64-linux-dynamic/lib/*.so* release/linux/Release/depends/lib/
             rm -rf release/linux/Release/depends/lib/*.a
