@@ -117,7 +117,7 @@ jobs:
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
           
-            VCPKG_BUILD_TYPE=release ./vcpkg install opus jemalloc openssl libsrtp\[openssl\] harfbuzz freetype fribidi fontconfig x264 openh264 opus aws-crt-cpp ffmpeg\[ffmpeg,nonfree,x264,opus,mp3lame,freetype,fribidi,fontconfig,drawtext,opencl,openh264,vpx\] aws-sdk-cpp\[core,s3,transfer\] --triplet arm64-linux-dynamic
+            VCPKG_BUILD_TYPE=release ./vcpkg install jemalloc openssl libsrtp\[openssl\] harfbuzz freetype fribidi fontconfig x264 openh264 opus aws-crt-cpp ffmpeg\[ffmpeg,nonfree,x264,opus,mp3lame,freetype,fribidi,fontconfig,drawtext,opencl,openh264,vpx\] aws-sdk-cpp\[core,s3,transfer\] --triplet arm64-linux-dynamic
             cd ../../
 
             mkdir -p build
