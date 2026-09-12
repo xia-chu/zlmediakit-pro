@@ -1,5 +1,7 @@
 # zlmediakit pro 闭源专业版
 
+简体中文 | [English](./README_en.md)
+
 ## 介绍
 基于zlmediakit最新开源版本源码，添加大量的功能增强后，现推出闭源专业版。
 该项目为闭源专业版的发行仓库，提供功能介绍、技术文档、二进制下载等功能。
@@ -85,6 +87,7 @@ zlmediakit pro原则上不提供源码授权(价格合适可谈)，只提供二�
 - WebRTC mcu语音聊天室
   - 1、支持mcu多人语音聊天室，混音前支持背景噪声消除，静音不参与混音，解决超大规模多人语音聊天室sfu方案不可用的问题。
   - 2、支持100人语音连麦，上千人旁听级会议。
+  - 3、支持基于单peerconnection多mline sfu视频会议，支持simulcast多分辨率。
 
 
 ## 使用技术文档
@@ -105,7 +108,7 @@ zlmediakit pro原则上不提供源码授权(价格合适可谈)，只提供二�
 - Linux onnx版本：
 
     和Linux普通版本相比增加onnx cpu推理功能，依赖python运行环境，需要先miniconda安装python3.11才能启动。
-  
+
 - Linux trt118 版本：
 
    和Linux普通版本相比增加tensorRT(11.8版本)gpu加速推理功能，全硬件编解码+tensorRT推理+cuda加速，全显存处理链路，性能最佳，依赖Python3.9，支持比较老旧型号的英伟达显卡。
@@ -114,6 +117,18 @@ zlmediakit pro原则上不提供源码授权(价格合适可谈)，只提供二�
 
    和Linux普通版本相比增加tensorRT(12.9版本)gpu加速推理功能，全硬件编解码+tensorRT推理+cuda加速，全显存处理链路，性能最佳，依赖Python3.12，支持新型号的英伟达显卡(例如RTX5系显卡)。
 
+- Linux Jetson版本：
+  
+    和Linux trt版本基本一致，支持tensorrt推理，在NVIDIA jetson(arm) jetpack35平台运行。
+
+- Linux Jetson2版本：
+  
+    和Linux trt版本基本一致，支持tensorrt推理，在NVIDIA jetson(arm) jetpack36平台运行。
+
+- Linux CANN版本：
+  
+    基于欧拉22(aarch64)系统构建，支持昇腾平台硬件编解码和ai推理。
+
 - Windows版本:
 
     支持特性全面，vcpkg编译依赖项，支持cuda、qsv、amf、aom、dav1d、opencl、openh264、vpx、vulkan等编解码器。
@@ -121,7 +136,7 @@ zlmediakit pro原则上不提供源码授权(价格合适可谈)，只提供二�
 - Windows onnx版本:
 
     和Windows普通版本相比增加onnx cuda推理功能，依赖python运行环境，依赖cuda和cudnn环境。
-  
+
 - [Windows trt版本](https://github.com/xia-chu/zlmediakit-pro/releases/download/release/windows-trt-2026-1-20.zip):
 
     和Windows普通版本相比增加cuda+tensorRT推理功能，依赖python3.14+cuda12运行环境。
@@ -140,67 +155,3 @@ docker支持x86_64和arm64平台，支持硬件编解码器，支持s3云存储�
 ```bash
 docker run -id -p 1935:1935 -p 8080:80 -p 8443:443 -p 8554:554 -p 10000:10000 -p 10000:10000/udp -p 8000:8000/udp -p 9000:9000/udp zlmediakit/zlmediakit-pro:feature_all
 ```
-
-
-## 更新记录
-- 2026-3-5
-  - 新增Python混合编程模式。
-  - 新增cookie登录鉴权模式。
-    
-- 2026-2-13
-  - 合并最新开源代码，支持Python混合编程模式(仅trt和onnx版本二进制包开启)。
-  - 优化mcu多人语音聊天室与ai推理相关功能。
-    
-- 2026-1-8
-  - 优化mp4录制时间戳逻辑，允许最大60秒时间戳跳跃，解决duration与osd信息不匹配的问题。
-  - 优化mcu多人语音聊天室性能，最大房间参会人数不再有性能瓶颈限制，支持千人级别连麦。
-
-- 2026-1-5
-  - 新增获取语音聊天室列表和用户列表相关接口。
-  - 新增支持语音聊天室旁听直播流。
-  - 优化语音音质，解决沙沙声与卡顿问题。
-    
-- 2026-1-1
-  - 新增支持mcu多人语音聊天室，混音前支持背景噪声消除，静音不参与混音。
-  
-- 2025-12-29
-  - 流式录像mp4至s3云存储支持非fmp4格式，解决fmp4录像http点播无法秒开的问题。
-    
-- 2025-12-26
-  - 增强事件视频录制，回溯和前向录制时间均支持负数。
-  - 音频nack反馈包个数可单独设置，提高音频重传速度。
-  - 配置文件新增支持优先webrtc over tcp配置。
-  - getAllSession http api返回连接类型。
-  - 媒体注册注销、拉流代理失败事件回调到Python层。
-  - 插件层支持获取解码列队缓存长度、支持清空解码列队缓存(降低延时)。
-  - 新增get_full_path(pybin11)接口。
-  - 新增单帧推理耗时统计。
-  - 解码丢帧事件支持回调至Python层，支持推理失败重试次数配置。
-    
-- 2025-12-23
-  - 新增支持删除s3云存储文件夹，修复s3云存储目录遍历相关问题。
-  - 优化webrtc抗丢包乱序逻辑。
-  - 修复WebRtcSession对象可能泄露的bug。
-    
-- 2025-12-15
-  - 新增支持python编写zlm http api接口和对接处理hook事件回调。
-  - ai推理新增支持设置任务优先级，支持抢占式实时模式。
-  - 支持ai推理多线程多实例并发模式，在cpu环境下也能实现实时推理。
-  - ai推理间隔改成毫秒模式，新增支持获取帧率(推理、解码、丢帧)等统计信息。
-    
-- 2025-11-27
-  - 支持新版语音对讲webrtc插件，降低使用难道，支持对讲音频转码。
-  - 稳定性增强。
-  - 同步开源代码。
-  
-- 2025-11-23
-  - linux发行包新增支持G722.1C编码器，支持svac解码，G722.1C编解码。
-  - 解决websocket-flv/fmp4/ts多路播放请求pending问题。
-  - 初步添加onvif客户端。
-  - 稳定性增强。
-  
-- 2025-11-7
-  - 新增支持mp4录制内存流写入s3云存储，支持从s3云存储加载mp4文件点播为rtsp/rtmp/flv/webrtc等协议。
-  - 新增支持截图写入云存储，并从云存储加载截图。
-  - deleteRecordDirectory/deleteSnapDirectory/getMP4RecordFile/getSnap接口支持云存储。
-  - 采用缓存机制优化云存储读写性能，降低读写请求qps。
