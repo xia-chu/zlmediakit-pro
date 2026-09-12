@@ -139,10 +139,12 @@ jobs:
 
             # openEuler 官方源偶发 502/504 和 HTTP/2 帧错误导致元数据下载失败，
             # 切换到华为云镜像源并关闭 metalink；仓库采用白名单：只启用 OS/everything/EPOL
+            # autoconf/automake/libtool/autoconf-archive 为 vcpkg 从源码构建 jemalloc 所需的
+            # autotools 工具链（libtoolize 由 libtool 提供），均在 everything 仓库中
             sed -i 's|https\?://repo.openeuler.org|https://mirrors.huaweicloud.com/openeuler|g; s|https\?://mirrors.openeuler.org|https://mirrors.huaweicloud.com/openeuler|g' /etc/yum.repos.d/*.repo
             yum clean all || true
             for i in 1 2 3; do
-              yum install -y --setopt=metadata_expire=3600 --disablerepo='*' --enablerepo=OS,everything,EPOL git curl zip unzip tar && break || { yum clean all || true; sleep 5; }
+              yum install -y --setopt=metadata_expire=3600 --disablerepo='*' --enablerepo=OS,everything,EPOL git curl zip unzip tar autoconf automake libtool autoconf-archive && break || { yum clean all || true; sleep 5; }
             done
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
