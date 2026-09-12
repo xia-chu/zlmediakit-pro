@@ -148,7 +148,7 @@ jobs:
             done
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
-            VCPKG_BUILD_TYPE=release ./vcpkg install aws-crt-cpp aws-sdk-cpp[core,s3,transfer] jemalloc --triplet arm64-linux-dynamic
+            VCPKG_BUILD_TYPE=release ./vcpkg install aws-crt-cpp aws-sdk-cpp[core,s3,transfer] --triplet arm64-linux-dynamic
             cd ../../
 
             mkdir -p build
