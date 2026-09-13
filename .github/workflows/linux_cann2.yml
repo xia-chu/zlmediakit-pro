@@ -87,7 +87,7 @@ jobs:
         with:
           path: 3rdpart/vcpkg/installed
           # Bump version (v1 → v2 ...) when vcpkg install arguments change to force cache refresh.
-          key: vcpkg-LinuxCann-b27f6bfad367d64f8f0f3296351c5d246e182bb42-v1
+          key: vcpkg-LinuxCann-b27f6bfad367d64f8f0f3296351c5d246e182bb42-v2
           restore-keys: |
             vcpkg-LinuxCann-b27f6bfad367d64f8f0f3296351c5d246e182bb42-
 
@@ -146,6 +146,10 @@ jobs:
             done
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
+            # jemalloc 默认 LG_PAGE=12（4K 页），aarch64 上运行内核若为 64K 页会直接 abort；
+            # vcpkg 上游 portfile 未暴露 --with-lg-page，这里注入 configure 选项改为 2^16=64K
+            sed -i 's|OPTIONS \${opts}|OPTIONS \${opts} --with-lg-page=16|' ports/jemalloc/portfile.cmake
+            grep -n 'with-lg-page' ports/jemalloc/portfile.cmake
             VCPKG_BUILD_TYPE=release ./vcpkg install jemalloc ffmpeg --triplet arm64-linux-dynamic
             cd ../../
 
