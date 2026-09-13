@@ -153,7 +153,7 @@ jobs:
           echo 'EXPOSE 8000/tcp' >> ${RELEASE_DIR}/Dockerfile
           echo 'EXPOSE 9000/udp' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
-          echo 'RUN pip3 install --no-cache-dir "boto3>=1.28.0" "kafka-python>=2.0.2" attrs cython "numpy==1.24.0" decorator sympy cffi pyyaml pathlib2 psutil scipy requests absl-py' >> ${RELEASE_DIR}/Dockerfile
+          echo 'RUN pip3 install --no-cache-dir "boto3>=1.28.0" "kafka-python>=2.0.2" attrs cython "numpy==1.24.0" decorator sympy cffi pyyaml pathlib2 psutil scipy requests absl-py "fastapi>=0.110.0" "uvloop>=0.19.0"' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'WORKDIR /opt/media/bin' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
