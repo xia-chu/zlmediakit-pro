@@ -163,18 +163,19 @@ jobs:
             which cmake
             cmake --version
 
-            # 安装 vcpkg 依赖 Install vcpkg dependencies
-            cd 3rdpart/vcpkg
-            ./bootstrap-vcpkg.sh
-            VCPKG_BUILD_TYPE=release ./vcpkg install libsrtp[openssl] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] pkgconf eigen3 opencv4[core,contrib,freetype,dnn] --triplet x64-linux-dynamic
-            cd ../../
-
             # 编译安装 onnxruntime(开启 cuda) Build and install onnxruntime with cuda
             # 命中缓存时跳过编译, 仅重新 make install(容器内 /usr/local 为临时文件系统)
             cd 3rdpart/onnxruntime
             if ! ls build/Linux/Release/libonnxruntime.so* >/dev/null 2>&1; then
               sh ./build.sh --allow_running_as_root --skip_tests --build_shared_lib --use_cuda --cuda_home /usr/local/cuda --parallel \$(nproc) --config Release --cmake_extra_defines CMAKE_POLICY_VERSION_MINIMUM=3.5
             fi
+
+            # 安装 vcpkg 依赖 Install vcpkg dependencies
+            cd 3rdpart/vcpkg
+            ./bootstrap-vcpkg.sh
+            VCPKG_BUILD_TYPE=release ./vcpkg install libsrtp[openssl] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] pkgconf eigen3 opencv4[core,contrib,freetype,dnn] --triplet x64-linux-dynamic
+            cd ../../
+            
             cd build/Linux/Release
             make install
             cd /root/git
