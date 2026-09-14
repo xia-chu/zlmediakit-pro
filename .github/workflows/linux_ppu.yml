@@ -78,7 +78,7 @@ jobs:
         with:
           repository: microsoft/onnxruntime
           fetch-depth: 1
-          ref: v1.30.0
+          ref: v1.23.2
           path: 3rdpart/onnxruntime
           submodules: recursive
 
