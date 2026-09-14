@@ -155,6 +155,14 @@ jobs:
             gcc --version
             nvcc --version
 
+            # 升级 CMake 到 3.31.6 (onnxruntime v1.30 要求 CMake>=3.28, 且 ZLM 使用 CMAKE_POLICY_VERSION_MINIMUM 需 CMake>=3.31)
+            curl -fsSL -o /tmp/cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz
+            tar -xzf /tmp/cmake.tar.gz -C /opt
+            ln -sf /opt/cmake-3.31.6-linux-x86_64/bin/* /usr/local/bin/
+            hash -r
+            which cmake
+            cmake --version
+
             # 安装 vcpkg 依赖 Install vcpkg dependencies
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
