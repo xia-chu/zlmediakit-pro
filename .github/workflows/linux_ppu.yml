@@ -165,19 +165,23 @@ jobs:
 
             # 编译安装 onnxruntime(开启 cuda) Build and install onnxruntime with cuda
             # 命中缓存时跳过编译, 仅重新 make install(容器内 /usr/local 为临时文件系统)
-            cd 3rdpart/onnxruntime
+            cd /root/git/3rdpart/onnxruntime
+            # 净化被污染的编译环境变量: 容器内 CFLAGS/CXXFLAGS 若含 -Werror 或杂散 token,
+            # 会导致 -Werror=unused-parameter 及 cannot specify -o with multiple files 编译错误
+            echo '=== build env (before sanitize) ==='; env | grep -iE 'CFLAGS|CXXFLAGS|^CC=|^CXX=|NVCC_' || true
             if ! ls build/Linux/Release/libonnxruntime.so* >/dev/null 2>&1; then
-              sh ./build.sh --allow_running_as_root --skip_tests --build_shared_lib --use_cuda --cuda_home /usr/local/cuda --parallel \$(nproc) --config Release --cmake_extra_defines CMAKE_POLICY_VERSION_MINIMUM=3.5
+              env CFLAGS='-Wno-error' CXXFLAGS='-Wno-error' sh ./build.sh --allow_running_as_root --skip_tests --build_shared_lib --use_cuda --cuda_home /usr/local/cuda --parallel \$(nproc) --config Release --cmake_extra_defines CMAKE_POLICY_VERSION_MINIMUM=3.5
             fi
+            cd /root/git/3rdpart/onnxruntime/build/Linux/Release
+            make install
+            cd /root/git
 
             # 安装 vcpkg 依赖 Install vcpkg dependencies
-            cd 3rdpart/vcpkg
+            cd /root/git/3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
             VCPKG_BUILD_TYPE=release ./vcpkg install libsrtp[openssl] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] pkgconf eigen3 opencv4[core,contrib,freetype,dnn] --triplet x64-linux-dynamic
             cd ../../
             
-            cd build/Linux/Release
-            make install
             cd /root/git
 
             export PKG_CONFIG_PATH=/root/git/3rdpart/vcpkg/installed/x64-linux-dynamic/lib/pkgconfig:\$PKG_CONFIG_PATH
