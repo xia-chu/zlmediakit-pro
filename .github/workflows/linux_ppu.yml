@@ -173,6 +173,9 @@ jobs:
             # 非 CI 环境(普通 git 工作区)下 onnxruntime 默认进入 dev_mode, 会把警告当错误(-Werror),
             # 导致 cuda_execution_provider.cc 报 unused-parameter; 用 --compile_no_warning_as_error 关闭
             if ! ls build/Linux/Release/libonnxruntime.so* >/dev/null 2>&1; then
+              # 清理上次失败/不完整的 build(含已打过补丁的 _deps/date-src),
+              # 避免 FetchContent 对 date 重复应用 patch 报 'Reversed (or previously applied) patch detected'
+              rm -rf build
               bash ./build.sh --allow_running_as_root --skip_tests --build_shared_lib --compile_no_warning_as_error --use_cuda --cuda_home /usr/local/cuda --parallel \$(nproc) --config Release --cmake_extra_defines CMAKE_POLICY_VERSION_MINIMUM=3.5
             fi
             cd /root/git/3rdpart/onnxruntime/build/Linux/Release
