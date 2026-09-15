@@ -162,11 +162,11 @@ jobs:
       - name: 启动 Docker 容器, 在Docker 容器中执行脚本
         run: |
           docker pull centos:7
-          docker run -v $(pwd):/root -w /root --rm centos:7 sh -c "
+          docker run -v $(pwd):/root -w /root --rm centos:7 bash -c "
             #!/bin/bash
             set -ex
             # 任何命令失败时自动转储 vcpkg buildtrees 日志（容器 --rm 后日志会消失，此为唯一保留失败现场的手段）
-            trap 'ec=$?; echo \"==== script FAILED (exit=$ec) at line $LINENO ====\"; for d in 3rdpart/vcpkg/buildtrees buildtrees /root/git/3rdpart/vcpkg/buildtrees /root/3rdpart/vcpkg/buildtrees; do [ -d \"$d\" ] || continue; echo \"==== dumping last 30 vcpkg log files under $d ====\"; find \"$d\" -name \"*.log\" -type f 2>/dev/null | head -30 | while read -r f; do echo \"---- tail -n 120 $f ----\"; tail -n 120 \"$f\" 2>/dev/null || true; done; done' ERR
+            trap 'ec=\$?; echo \"==== script FAILED (exit=\$ec) at line \$LINENO ====\"; for d in 3rdpart/vcpkg/buildtrees buildtrees /root/git/3rdpart/vcpkg/buildtrees /root/3rdpart/vcpkg/buildtrees; do [ -d \"\$d\" ] || continue; echo \"==== dumping last 30 vcpkg log files under \$d ====\"; find \"\$d\" -name \"*.log\" -type f 2>/dev/null | head -30 | while read -r f; do echo \"---- tail -n 120 \$f ----\"; tail -n 120 \"\$f\" 2>/dev/null || true; done; done' ERR
             ls -hl /root/3rdpart/stdcpp
           
             # Backup original CentOS-Base.repo file

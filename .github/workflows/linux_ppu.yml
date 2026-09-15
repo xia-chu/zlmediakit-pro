@@ -144,11 +144,22 @@ jobs:
       - name: 启动 Docker 容器, 在Docker 容器中执行脚本
         run: |
           docker pull zlmediakit/zlm_dev:ppu
-          docker run -v $(pwd):/root/git -w /root/git --rm zlmediakit/zlm_dev:ppu sh -c "
+          docker run -v $(pwd):/root/git -w /root/git --rm zlmediakit/zlm_dev:ppu bash -c "
             #!/bin/bash
             set -ex
             # 任何命令失败时自动转储 vcpkg buildtrees 日志（容器 --rm 后日志会消失，此为唯一保留失败现场的手段）
-            trap 'ec=$?; echo \"==== script FAILED (exit=$ec) at line $LINENO ====\"; for d in 3rdpart/vcpkg/buildtrees buildtrees /root/git/3rdpart/vcpkg/buildtrees /root/3rdpart/vcpkg/buildtrees; do [ -d \"$d\" ] || continue; echo \"==== dumping last 30 vcpkg log files under $d ====\"; find \"$d\" -name \"*.log\" -type f 2>/dev/null | head -30 | while read -r f; do echo \"---- tail -n 120 $f ----\"; tail -n 120 \"$f\" 2>/dev/null || true; done; done' ERR
+            dump_vcpkg_logs() {
+              local d f
+              for d in 3rdpart/vcpkg/buildtrees /root/git/3rdpart/vcpkg/buildtrees; do
+                [ -d \"\$d\" ] || continue
+                echo \"==== last 30 vcpkg *.log under \$d ====\"
+                find \"\$d\" -name '*.log' -type f 2>/dev/null | head -30 | while read -r f; do
+                  echo \"---- tail -n 120 \$f ----\"
+                  tail -n 120 \"\$f\" 2>/dev/null || true
+                done
+              done
+            }
+            trap 'echo \"==== script FAILED (exit=\$?) ====\"; dump_vcpkg_logs' ERR
             # 安装编译依赖 Install build dependencies
             apt update
             apt install -y ffmpeg libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libavdevice-dev libswscale-dev libswresample-dev libssl-dev libopus-dev libharfbuzz-dev libfreetype-dev libfribidi-dev libfontconfig-dev libjemalloc-dev
@@ -191,7 +202,18 @@ jobs:
             # 安装 vcpkg 依赖 Install vcpkg dependencies
             cd /root/git/3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
-            VCPKG_BUILD_TYPE=release ./vcpkg install libsrtp[openssl] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] pkgconf eigen3 opencv4[core,contrib,freetype,dnn] --triplet x64-linux-dynamic
+            # 某些上游(如 gitlab.dkrz.de 的 libaec)会返回 HTTP 429 限流, vcpkg 自带重试(1/2/4s)太急;
+            # 用带长退避的循环重试整个 install(已装好的包会缓存, 重试只补失败项, 可越过瞬时限流)
+            vcpkg_ok=0
+            for attempt in 1 2 3 4 5 6; do
+              if VCPKG_BUILD_TYPE=release ./vcpkg install libsrtp[openssl] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] pkgconf eigen3 opencv4[core,contrib,freetype,dnn] --triplet x64-linux-dynamic; then
+                vcpkg_ok=1
+                break
+              fi
+              echo \"==== vcpkg install attempt \$attempt failed, retry in 120s ====\"
+              sleep 120
+            done
+            [ \"\$vcpkg_ok\" = \"1\" ] || { echo 'vcpkg install failed after retries'; dump_vcpkg_logs; exit 1; }
             cd ../../
             
             cd /root/git
