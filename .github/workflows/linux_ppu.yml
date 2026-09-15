@@ -231,6 +231,7 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE=/root/git/3rdpart/vcpkg/scripts/buildsystems/vcpkg.cmake \
             -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic \
             -DENABLE_ONNX=ON \
+            -DENABLE_CUDA=ON \
             -DONNXRUNTIME_PATH_ROOT=/usr/local/ \
             -DOpenCV_ROOT=/root/git/3rdpart/vcpkg/installed/x64-linux-dynamic/share/opencv4 \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
