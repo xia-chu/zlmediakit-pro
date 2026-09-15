@@ -78,7 +78,7 @@ jobs:
         with:
           repository: microsoft/onnxruntime
           fetch-depth: 1
-          ref: v1.30.0
+          ref: v1.23.2
           path: 3rdpart/onnxruntime
           submodules: recursive
 
@@ -106,9 +106,9 @@ jobs:
           # 容器内固定挂载到 /root/git, cmake 缓存中的绝对路径可复用
           path: 3rdpart/onnxruntime/build
           # Bump version (v1 → v2 ...) when onnxruntime version or build arguments change to force cache refresh.
-          key: onnxruntime-LinuxPPU-cuda-v1.30.0-v1
+          key: onnxruntime-LinuxPPU-cuda-v1.23.2-v1
           restore-keys: |
-            onnxruntime-LinuxPPU-cuda-v1.30.0-
+            onnxruntime-LinuxPPU-cuda-v1.23.2-
 
       - name: 获取git hash
         run: |
@@ -159,7 +159,7 @@ jobs:
             gcc --version
             nvcc --version
 
-            # 升级 CMake 到 3.31.6 (onnxruntime v1.30 要求 CMake>=3.28, 且 ZLM 使用 CMAKE_POLICY_VERSION_MINIMUM 需 CMake>=3.31)
+            # 升级 CMake 到 3.31.6 (ZLM 使用 CMAKE_POLICY_VERSION_MINIMUM 需 CMake>=3.31)
             curl -fsSL -o /tmp/cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz
             tar -xzf /tmp/cmake.tar.gz -C /opt
             ln -sf /opt/cmake-3.31.6-linux-x86_64/bin/* /usr/local/bin/
