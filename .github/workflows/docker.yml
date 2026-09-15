@@ -40,7 +40,7 @@ jobs:
       - name: 获取分支和ci名
         run: |
           #!/bin/bash
-          set -x
+          set -ex
           input_string="${{ github.event.comment.body }}"
           
           # Split into lines and trim each line

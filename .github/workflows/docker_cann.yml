@@ -32,7 +32,7 @@ jobs:
       - name: 获取分支、ci名和可选的 LinuxCann run_id
         run: |
           #!/bin/bash
-          set -x
+          set -ex
           input_string="${{ github.event.comment.body }}"
           
           # Split into lines and trim each line
@@ -62,7 +62,7 @@ jobs:
       - name: 获取 LinuxCann run_id
         run: |
           #!/bin/bash
-          set -x
+          set -ex
           if [ -z "${CANN_RUN_ID}" ]; then
             # 自动查找该分支最新的成功 LinuxCann 运行  Auto-detect latest successful LinuxCann run
             RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
@@ -79,7 +79,7 @@ jobs:
       - name: 下载 LinuxCann 编译产出
         run: |
           #!/bin/bash
-          set -x
+          set -ex
           # 列出 artifacts  List artifacts for this run
           ARTIFACTS=$(curl -s -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
             "https://api.github.com/repos/${{ github.repository }}/actions/runs/${CANN_RUN_ID}/artifacts")

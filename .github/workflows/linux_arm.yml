@@ -31,7 +31,7 @@ jobs:
       - name: 获取分支和ci名
         run: |
           #!/bin/bash
-          set -x
+          set -ex
           input_string="${{ github.event.comment.body }}"
           
           # Split into lines and trim each line
@@ -104,8 +104,7 @@ jobs:
           docker pull --platform linux/arm64 zlmediakit/zlm_dev:linux_arm
           docker run --platform linux/arm64 -v $(pwd):/root/src -w /root/src --rm zlmediakit/zlm_dev:linux_arm  sh -c "
             #!/bin/bash
-            set -x
-          
+            set -ex
             mkdir -p build
             cd build
             cmake .. \

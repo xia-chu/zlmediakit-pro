@@ -24,7 +24,7 @@ jobs:
 
       - name: 获取分支和 ci 名
         run: |
-          set -x
+          set -ex
           input_string="${{ github.event.comment.body }}"
           IFS=' ' read -r branch_name ci_name <<< "$input_string"
 

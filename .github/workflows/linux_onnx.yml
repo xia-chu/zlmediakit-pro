@@ -31,7 +31,7 @@ jobs:
       - name: 获取分支和ci名
         run: |
           #!/bin/bash
-          set -x
+          set -ex
           input_string="${{ github.event.comment.body }}"
           
           # Split into lines and trim each line
@@ -98,8 +98,7 @@ jobs:
           docker pull zlmediakit/zlm_dev:linux_onnx
           docker run -v $(pwd):/root/git -w /root/git --rm zlmediakit/zlm_dev:linux_onnx sh -c "
             #!/bin/bash
-            set -x
-          
+            set -ex
             export PATH="/root/miniconda/bin:$PATH"
             source "/root/miniconda/etc/profile.d/conda.sh"
             conda activate py11
