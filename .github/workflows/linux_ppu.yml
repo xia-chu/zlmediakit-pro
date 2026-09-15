@@ -87,7 +87,9 @@ jobs:
         with:
           repository: microsoft/vcpkg
           fetch-depth: 1
-          ref: b27f6bfad367d64f8f0f3296351c5d246e182bb4
+          # 升级到 2026.07.29(commit c76c06644034521fb761a39f8f52d8e87d1103d5):
+          # 旧版 libaec 从 gitlab.dkrz.de 下载常遇 HTTP 429 限流, 新版已改为 vcpkg_from_github
+          ref: 2026.07.29
           path: 3rdpart/vcpkg
           submodules: recursive
 
@@ -96,9 +98,9 @@ jobs:
         with:
           path: 3rdpart/vcpkg/installed
           # Bump version (v1 → v2 ...) when vcpkg install arguments change to force cache refresh.
-          key: vcpkg-LinuxPPU-b27f6bfad367d64f8f0f3296351c5d246e182bb4-v1
+          key: vcpkg-LinuxPPU-2026.07.29-v1
           restore-keys: |
-            vcpkg-LinuxPPU-b27f6bfad367d64f8f0f3296351c5d246e182bb4-
+            vcpkg-LinuxPPU-2026.07.29-
 
       - name: 缓存 onnxruntime(cuda) 编译产物
         uses: actions/cache@v4
