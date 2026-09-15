@@ -150,7 +150,7 @@ jobs:
             cd build
             cmake .. \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-            -DPYTHON_EXECUTABLE=$(which python3) \
+            -DPYTHON_EXECUTABLE=\$(which python3) \
             -DENABLE_CUDA=ON \
             -DBUILD_SHARED_LIBS=off \
             -DENABLE_AI=ON \
@@ -166,7 +166,7 @@ jobs:
             -DCMAKE_CXX_FLAGS='-Wl,--allow-shlib-undefined' \
             -DENABLE_API=OFF
           
-            make -j $(nproc)
+            make -j \$(nproc)
           
             cd ..
             rm -rf release/linux/Release/*.a

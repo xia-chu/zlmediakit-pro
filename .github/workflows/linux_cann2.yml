@@ -161,7 +161,7 @@ jobs:
             cd build
             cmake .. \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-            -DPYTHON_EXECUTABLE=$(which python3) \
+            -DPYTHON_EXECUTABLE=\$(which python3) \
             -DENABLE_CANN=OFF \
             -DENABLE_PYTHON=ON \
             -DBUILD_SHARED_LIBS=off \
@@ -176,7 +176,7 @@ jobs:
             -DCMAKE_CXX_FLAGS='-I/usr/local/Ascend/cann-8.5.0/aarch64-linux/include -L/usr/local/Ascend/cann-8.5.0/aarch64-linux/devlib/' \
             -DENABLE_API=OFF
           
-            make -j $(nproc)
+            make -j \$(nproc)
           
             cd ..
             rm -rf release/linux/Release/*.a

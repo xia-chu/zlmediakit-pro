@@ -104,7 +104,7 @@ jobs:
             tar xf autoconf-2.72.tar.gz > /dev/null 2>&1
             cd autoconf-2.72
             ./configure --prefix=/usr > /dev/null 2>&1
-            make -j$(nproc) > /dev/null 2>&1
+            make -j\$(nproc) > /dev/null 2>&1
             make install
             cd ..
             rm -rf autoconf-2.72*
@@ -133,7 +133,7 @@ jobs:
             -DVCPKG_TARGET_TRIPLET=arm64-linux-dynamic \
             -DCMAKE_TOOLCHAIN_FILE=/root/3rdpart/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-            make -j $(nproc)
+            make -j \$(nproc)
 
             cd ..
             rm -rf release/linux/Release/*.a

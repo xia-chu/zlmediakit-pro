@@ -111,7 +111,7 @@ jobs:
             -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic \
             -DCMAKE_TOOLCHAIN_FILE=/root/src/vcpkg/scripts/buildsystems/vcpkg.cmake
           
-            make -j $(nproc)
+            make -j \$(nproc)
           
             cd ..
             rm -rf release/linux/Release/*.a

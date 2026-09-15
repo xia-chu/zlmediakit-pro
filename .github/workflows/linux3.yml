@@ -196,7 +196,7 @@ jobs:
             tar xf autoconf-2.72.tar.gz > /dev/null 2>&1
             cd autoconf-2.72
             ./configure --prefix=/usr > /dev/null 2>&1
-            make -j$(nproc) > /dev/null 2>&1
+            make -j\$(nproc) > /dev/null 2>&1
             make install
             cd ..
           
@@ -204,7 +204,7 @@ jobs:
             tar xfv help2man-1.48.3.tar.xz > /dev/null 2>&1
             cd help2man-1.48.3
             ./configure --prefix=/usr > /dev/null 2>&1
-            make -j$(nproc) > /dev/null 2>&1
+            make -j\$(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ..
             cpanm --notest Thread::Queue > /dev/null 2>&1
@@ -213,7 +213,7 @@ jobs:
             tar xf automake-1.17.tar.gz > /dev/null 2>&1
             cd automake-1.17
             ./configure --prefix=/usr > /dev/null 2>&1
-            make -j$(nproc) install-exec > /dev/null 2>&1
+            make -j\$(nproc) install-exec > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ..
           
@@ -221,7 +221,7 @@ jobs:
             tar xf libtool-2.4.7.tar.gz > /dev/null 2>&1
             cd libtool-2.4.7
             ./configure --prefix=/usr > /dev/null 2>&1
-            make -j$(nproc) > /dev/null 2>&1
+            make -j\$(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ..
           
@@ -229,7 +229,7 @@ jobs:
             tar xf autoconf-archive-2024.10.16.tar.xz > /dev/null 2>&1
             cd autoconf-archive-2024.10.16 
             ./configure --prefix=/usr/ > /dev/null 2>&1
-            make -j$(nproc) > /dev/null 2>&1
+            make -j\$(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ..
 
@@ -241,14 +241,14 @@ jobs:
             cd 3rdpart/git
             make configure > /dev/null 2>&1
             ./configure --prefix=/usr > /dev/null 2>&1
-            make all -j $(nproc)  > /dev/null 2>&1
+            make all -j \$(nproc)  > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ../../
           
             cd 3rdpart/nasm
             ./autogen.sh > /dev/null 2>&1
             ./configure --prefix=/usr > /dev/null 2>&1
-            make -j $(nproc) > /dev/null 2>&1
+            make -j \$(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ../../
           
@@ -275,7 +275,7 @@ jobs:
             mkdir build
             cd build
             cmake .. -DCMAKE_INSTALL_PREFIX=/root/install -DCMAKE_POSITION_INDEPENDENT_CODE=ON > /dev/null 2>&1
-            make -j $(nproc) > /dev/null 2>&1
+            make -j \$(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ../../../
         
@@ -283,7 +283,7 @@ jobs:
             mkdir build
             cd build
             cmake .. -DCMAKE_BUILD_TYPE=Debug
-            make -j $(nproc)
+            make -j \$(nproc)
             make install > /dev/null 2>&1
             cd ../../../
         
@@ -308,7 +308,7 @@ jobs:
             --enable-libx265 --disable-libxml2 --disable-zlib --disable-libsrt --enable-libmfx --enable-encoder=h264_qsv \
             --enable-decoder=h264_qsv --enable-cross-compile --pkg-config=/bin/pkg-config --enable-optimizations --arch=x86_64 --enable-asm --enable-x86asm
         
-            make -j $(nproc) > /dev/null 2>&1
+            make -j \$(nproc) > /dev/null 2>&1
             make install > /dev/null 2>&1
             cd ../../
           
@@ -326,7 +326,7 @@ jobs:
             -DCMAKE_TOOLCHAIN_FILE=/root/3rdpart/vcpkg/scripts/buildsystems/vcpkg.cmake \
             -DCMAKE_CXX_FLAGS='-L/root/3rdpart/fuck_svac/sdk -ldl'
           
-            make -j $(nproc)
+            make -j \$(nproc)
           
             cd ..
             rm -rf release/linux/Release/*.a

@@ -112,7 +112,7 @@ jobs:
             cd build
             cmake .. \
             -DCMAKE_POLICY_VERSION_MINIMUM=3.5 \
-            -DPYTHON_EXECUTABLE=$(which python3.11) \
+            -DPYTHON_EXECUTABLE=\$(which python3.11) \
             -DENABLE_ONNX=ON \
             -DOpenCV_ROOT=/root/src/vcpkg/installed/x64-linux-dynamic/share/opencv4 \
             -DONNXRUNTIME_PATH_ROOT=/usr/local/ \
@@ -128,7 +128,7 @@ jobs:
             -DVCPKG_TARGET_TRIPLET=x64-linux-dynamic \
             -DCMAKE_TOOLCHAIN_FILE=/root/src/vcpkg/scripts/buildsystems/vcpkg.cmake
           
-            make -j $(nproc)
+            make -j \$(nproc)
           
             cd ..
             rm -rf release/linux/Release/*.a
