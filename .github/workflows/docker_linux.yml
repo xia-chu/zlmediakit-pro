@@ -1,4 +1,4 @@
-name: DockerTrt
+name: DockerLinux
 
 on:
   issue_comment:
@@ -29,7 +29,7 @@ jobs:
         if: github.event.issue.number != 1 || github.event.comment.user.login != 'xia-chu'
         run: exit 1
 
-      - name: 获取分支、ci名和可选的 Linux_trt118 run_id
+      - name: 获取分支、ci名和可选的 Linux run_id
         run: |
           #!/bin/bash
           set -ex
@@ -54,29 +54,29 @@ jobs:
                 exit 1
               fi
             elif [ "$i" -eq 2 ] && [ -n "${lines[i]}" ]; then
-              echo "Linux_trt118 run_id: ${lines[i]}"
+              echo "Linux run_id: ${lines[i]}"
               echo "TRT_RUN_ID=${lines[i]}" >> $GITHUB_ENV
             fi
           done
 
-      - name: 获取 Linux_trt118 run_id
+      - name: 获取 Linux run_id
         run: |
           #!/bin/bash
           set -ex
           if [ -z "${TRT_RUN_ID}" ]; then
-            # 自动查找该分支最新的成功 Linux_trt118 运行  Auto-detect latest successful Linux_trt118 run
+            # 自动查找该分支最新的成功 Linux 运行  Auto-detect latest successful Linux run
             RESPONSE=$(curl -s -H "Authorization: token ${{ secrets.ACCESS_TOKEN }}" \
-              "https://api.github.com/repos/${{ github.repository }}/actions/workflows/linux_trt118.yml/runs?branch=${{ env.BRANCH }}&status=success&per_page=1")
+              "https://api.github.com/repos/${{ github.repository }}/actions/workflows/linux.yml/runs?branch=${{ env.BRANCH }}&status=success&per_page=1")
             TRT_RUN_ID=$(echo "$RESPONSE" | jq -r '.workflow_runs[0].id // empty')
             if [ -z "$TRT_RUN_ID" ]; then
-              echo "未找到分支 ${{ env.BRANCH }} 的成功 Linux_trt118 运行，请检查分支名或手动提供 run_id"
+              echo "未找到分支 ${{ env.BRANCH }} 的成功 Linux 运行，请检查分支名或手动提供 run_id"
               exit 1
             fi
             echo "TRT_RUN_ID=${TRT_RUN_ID}" >> $GITHUB_ENV
           fi
-          echo "使用 Linux_trt118 run_id: ${TRT_RUN_ID}"
+          echo "使用 Linux run_id: ${TRT_RUN_ID}"
 
-      - name: 下载 Linux_trt118 编译产出
+      - name: 下载 Linux 编译产出
         run: |
           #!/bin/bash
           set -ex
@@ -87,7 +87,7 @@ jobs:
           # 找到第一个 artifact 的下载 URL  Find the first artifact download URL
           DOWNLOAD_URL=$(echo "$ARTIFACTS" | jq -r '.artifacts[0].archive_download_url // empty')
           if [ -z "$DOWNLOAD_URL" ]; then
-            echo "未找到 artifact，请确认 Linux_trt118 运行已成功完成"
+            echo "未找到 artifact，请确认 Linux 运行已成功完成"
             exit 1
           fi
           
@@ -136,7 +136,7 @@ jobs:
           echo 'exec ./MediaServer -s default.pem -c ./conf/config.ini -l 1' >> ${RELEASE_DIR}/start.sh
           chmod +x ${RELEASE_DIR}/start.sh
           # 生成 Dockerfile
-          echo 'FROM zlmediakit/cuda_dev:11.8' > ${RELEASE_DIR}/Dockerfile
+          echo 'FROM ubuntu:20.04' > ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'EXPOSE 1935/tcp' >> ${RELEASE_DIR}/Dockerfile
           echo 'EXPOSE 554/tcp' >> ${RELEASE_DIR}/Dockerfile
@@ -148,7 +148,7 @@ jobs:
           echo 'EXPOSE 8000/tcp' >> ${RELEASE_DIR}/Dockerfile
           echo 'EXPOSE 9000/udp' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
-          echo 'RUN apt-get update && apt-get install -y --no-install-recommends python3-pip libpython3.9 libpython3.9-stdlib && rm -rf /var/lib/apt/lists/*' >> ${RELEASE_DIR}/Dockerfile
+          echo 'RUN export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends python3-pip libpython3.9 libpython3.9-stdlib ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libswresample-dev libavfilter-dev libpostproc-dev libopencv-dev && rm -rf /var/lib/apt/lists/*' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'RUN pip3 install --no-cache-dir "boto3>=1.28.0" "kafka-python>=2.0.2" attrs cython "numpy==1.24.0" decorator sympy cffi pyyaml pathlib2 psutil scipy requests absl-py "fastapi>=0.110.0" "uvloop>=0.19.0"' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
@@ -165,5 +165,5 @@ jobs:
           context: release/linux/Release
           file: release/linux/Release/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:trt_release
+          tags: ${{ env.REGISTRY }}/${{ env.USER_NAME }}/${{ env.REPO }}:linux_release
           platforms: linux/amd64
