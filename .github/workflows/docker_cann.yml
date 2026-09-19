@@ -137,7 +137,6 @@ jobs:
           echo 'export LD_LIBRARY_PATH=./depends/lib:./depends/ffmpeg/lib/:./depends/opencv/lib/:./depends/lib64/' >> ${RELEASE_DIR}/start.sh
           echo 'export PYTHONPATH=./python' >> ${RELEASE_DIR}/start.sh
           echo 'source /usr/local/Ascend/cann-8.5.0/set_env.sh' >> ${RELEASE_DIR}/start.sh
-          echo 'export MALLOC_ARENA_MAX=2' >> ${RELEASE_DIR}/start.sh
           echo 'exec ./MediaServer -s default.pem -c ./conf/config.ini -l 1' >> ${RELEASE_DIR}/start.sh
           chmod +x ${RELEASE_DIR}/start.sh
           # 生成 Dockerfile
