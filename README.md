@@ -87,7 +87,8 @@ zlmediakit pro原则上不提供源码授权(价格合适可谈)，只提供二�
 - WebRTC mcu语音聊天室
   - 1、支持mcu多人语音聊天室，混音前支持背景噪声消除，静音不参与混音，解决超大规模多人语音聊天室sfu方案不可用的问题。
   - 2、支持100人语音连麦，上千人旁听级会议。
-  - 3、支持基于单peerconnection多mline sfu视频会议，支持simulcast多分辨率。
+  - 3、支持语音上下行fec冗余纠错算法，提高抗弱网丢包能力，提高音质。
+  - 4、支持基于单peerconnection多mline sfu视频会议，支持simulcast多分辨率。
 
 
 ## 使用技术文档
