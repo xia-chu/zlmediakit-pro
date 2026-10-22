@@ -100,6 +100,17 @@ jobs:
             vcpkg-macOS_onnx-arm64-osx-release-e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb-
 
       - name: 配置 vcpkg
+        id: vcpkg_first
+        continue-on-error: true
+        uses: lukka/run-vcpkg@v7
+        with:
+          vcpkgDirectory: '${{github.workspace}}/vcpkg'
+          vcpkgTriplet: arm64-osx-release
+          vcpkgGitCommitId: 'e3ed41868d5034bc608eaaa58383cd6ecdbb5ffb'
+          vcpkgArguments: 'eigen3 openssl libsrtp[openssl] harfbuzz freetype fribidi fontconfig ffmpeg[ffmpeg,nonfree,x264,x265,opus,freetype,fribidi,fontconfig,drawtext,aom,openh264,vpx] aws-crt-cpp aws-sdk-cpp[core,s3,transfer] opencv[contrib,core,dnn,freetype]'
+
+      - name: 配置 vcpkg (重试,应对下载限流)
+        if: steps.vcpkg_first.outcome == 'failure'
         uses: lukka/run-vcpkg@v7
         with:
           vcpkgDirectory: '${{github.workspace}}/vcpkg'
