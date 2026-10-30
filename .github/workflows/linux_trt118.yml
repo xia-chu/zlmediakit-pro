@@ -129,14 +129,15 @@ jobs:
             # 任何命令失败时自动转储 vcpkg buildtrees 日志（容器 --rm 后日志会消失，此为唯一保留失败现场的手段）
             trap 'ec=\$?; echo \"==== script FAILED (exit=\$ec) at line \$LINENO ====\"; for d in 3rdpart/vcpkg/buildtrees buildtrees /root/git/3rdpart/vcpkg/buildtrees /root/3rdpart/vcpkg/buildtrees; do [ -d \"\$d\" ] || continue; echo \"==== dumping last 30 vcpkg log files under \$d ====\"; find \"\$d\" -name \"*.log\" -type f 2>/dev/null | head -30 | while read -r f; do echo \"---- tail -n 120 \$f ----\"; tail -n 120 \"\$f\" 2>/dev/null || true; done; done' ERR
             apt update
-            apt install -y git libopus-dev libeigen3-dev libssl-dev python3.9 libpython3.9-dev python3-pip python3.9-distutils curl zip unzip tar
+            # autoconf/automake/libtool/autoconf-archive 为 vcpkg 从源码构建 jemalloc 所需的 autotools 工具链（libtoolize 由 libtool 提供）
+            apt install -y git libopus-dev libeigen3-dev libssl-dev python3.9 libpython3.9-dev python3-pip python3.9-distutils curl zip unzip tar autoconf autoconf-archive automake libtool
             python3 --version
             gcc --version
 
             # 编译安装 aws-sdk-cpp 以开启 s3 云存储  Build aws-sdk-cpp to enable s3 cloud storage
             cd 3rdpart/vcpkg
             ./bootstrap-vcpkg.sh
-            VCPKG_BUILD_TYPE=release ./vcpkg install aws-crt-cpp aws-sdk-cpp[core,s3,transfer] --triplet x64-linux-dynamic
+            VCPKG_BUILD_TYPE=release ./vcpkg install aws-crt-cpp aws-sdk-cpp[core,s3,transfer] jemalloc --triplet x64-linux-dynamic
             cd ../../
 
             mkdir -p build
