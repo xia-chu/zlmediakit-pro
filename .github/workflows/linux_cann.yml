@@ -188,6 +188,25 @@ jobs:
             cp -rfP 3rdpart/vcpkg/installed/arm64-linux-dynamic/lib/*.so* release/linux/Release/depends/lib/
             rm -rf release/linux/Release/depends/lib/*.a
 
+            # 运行系统为 openEuler 22.03 LTS：glibc/libstdc++/libgcc/libcrypt/libxml2/glib2/pcre2/lzma/bz2/python 等
+            # 系统自带，不随包分发；这里只拷贝需要额外 yum 安装的第三方库(按 libxxx.so* 通配，保留软链接)
+            SYS_LIBS='libopus libx264 libx265 libfribidi libfontconfig libfreetype libharfbuzz libgraphite2 libpng16'
+            for base in \$SYS_LIBS; do
+              found=0
+              for d in /usr/lib64 /lib64 /usr/lib /lib; do
+                [ -d "\$d" ] || continue
+                for f in "\$d"/\${base}.so*; do
+                  [ -e "\$f" ] || continue
+                  case "\$f" in *.a) continue ;; esac
+                  # -a 保留符号链接本身(不跟随、不解引用)，实体文件与各级软链接都会落盘
+                  cp -af "\$f" release/linux/Release/depends/lib/
+                  found=1
+                done
+              done
+              [ "\$found" = "1" ] || echo \"WARN: 未找到系统库 \${base}.so*\"
+            done
+            ls -l release/linux/Release/depends/lib/
+
           "
 
       - name: 设置环境变量
