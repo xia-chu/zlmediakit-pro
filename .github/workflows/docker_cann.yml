@@ -139,6 +139,34 @@ jobs:
           echo 'source /usr/local/Ascend/cann-8.5.0/set_env.sh' >> ${RELEASE_DIR}/start.sh
           echo 'exec ./MediaServer -s default.pem -c ./conf/config.ini -l 1' >> ${RELEASE_DIR}/start.sh
           chmod +x ${RELEASE_DIR}/start.sh
+          # 生成 python 插件依赖清单
+          cat > ${RELEASE_DIR}/requirements-base.txt <<'EOF'
+          # Common dependencies for the Python plugins.
+          numpy>=1.24,<3
+          opencv-python-headless>=4.8,<5
+          Pillow>=10,<13
+          protobuf>=3.20.3,<8
+          # areaPlugin, OCR plugin imports, and coordinate conversion utilities.
+          Shapely>=1.8.5,<3
+          sympy>=1.12,<2
+          pyproj>=3.5,<4
+          geopy>=2.3,<3
+          # AIS WebSocket client.
+          websocket-client>=1.6,<2
+          # MQTT, including the bundled client's optional DNS SRV and proxy imports.
+          paho-mqtt==2.1.0
+          dnspython>=2.3,<3
+          PySocks>=1.7.1,<2
+          # Compatibility imports used by bundled paho-mqtt on older Python versions.
+          typing-extensions>=4.4,<5
+          EOF
+          cat > ${RELEASE_DIR}/requirements-ascend.txt <<'EOF'
+          # Huawei Atlas / Ascend NPU OCR.
+          -r requirements-base.txt
+          # onnxruntime-cann 1.20+ 只提供 Python>=3.10 的 wheel，基础镜像 pip3 为 Python 3.9，需按版本回退
+          onnxruntime-cann>=1.20,<2; python_version >= "3.10"
+          onnxruntime-cann>=1.18,<1.19; python_version < "3.10"
+          EOF
           # 生成 Dockerfile
           echo 'FROM --platform=linux/arm64 zlmediakit/cann:8.5' > ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
@@ -157,6 +185,8 @@ jobs:
           echo 'WORKDIR /opt/media/bin' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'COPY . /opt/media/bin' >> ${RELEASE_DIR}/Dockerfile
+          echo '' >> ${RELEASE_DIR}/Dockerfile
+          echo 'RUN pip3 install --no-cache-dir -r /opt/media/bin/requirements-ascend.txt' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'CMD ["/opt/media/bin/start.sh"]' >> ${RELEASE_DIR}/Dockerfile
 
