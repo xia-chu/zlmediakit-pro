@@ -159,7 +159,7 @@ jobs:
           cat > ${RELEASE_DIR}/requirements-nvidia.txt <<'EOF'
           # NVIDIA GPU OCR.
           -r requirements-base.txt
-          # onnxruntime-gpu 1.18+ 只提供 Python>=3.10 的 wheel，基础镜像 pip3 为 Python 3.8，需按版本回退
+          # onnxruntime-gpu 1.18+ 只提供 Python>=3.10 的 wheel，镜像 pip 为 Python 3.9，需按版本回退
           onnxruntime-gpu>=1.18,<2; python_version >= "3.10"
           onnxruntime-gpu>=1.16,<1.17; python_version < "3.10"
           EOF
@@ -176,16 +176,19 @@ jobs:
           echo 'EXPOSE 8000/tcp' >> ${RELEASE_DIR}/Dockerfile
           echo 'EXPOSE 9000/udp' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
-          echo 'RUN apt-get update && apt-get install -y --no-install-recommends python3-pip libpython3.9 libpython3.9-stdlib && rm -rf /var/lib/apt/lists/*' >> ${RELEASE_DIR}/Dockerfile
+          # MediaServer 链接的是 python3.9，安装 python3.9 并把 pip 切到 python3.9，避免依赖装进 python3.8
+          echo 'RUN apt-get update && apt-get install -y --no-install-recommends python3.9 python3.9-dev python3.9-distutils curl libpython3.9 libpython3.9-stdlib && rm -rf /var/lib/apt/lists/*' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
-          # 基础镜像 pip3 为 Python 3.8，botocore 在该版本要求 urllib3<1.27，否则 S3 上传异常
-          echo 'RUN pip3 install --no-cache-dir "boto3>=1.28.0" "kafka-python>=2.0.2" attrs cython "numpy==1.24.0" decorator sympy cffi pyyaml pathlib2 psutil scipy requests absl-py "fastapi>=0.110.0" "uvloop>=0.19.0" "urllib3<1.27"' >> ${RELEASE_DIR}/Dockerfile
+          echo 'RUN curl -sS https://bootstrap.pypa.io/pip/3.9/get-pip.py | python3.9 && python3.9 -m pip --version' >> ${RELEASE_DIR}/Dockerfile
+          echo '' >> ${RELEASE_DIR}/Dockerfile
+          # Python 3.9 下 botocore 要求 urllib3<1.27，否则 S3 上传异常
+          echo 'RUN python3.9 -m pip install --no-cache-dir "boto3>=1.28.0" "kafka-python>=2.0.2" attrs cython "numpy==1.24.0" decorator sympy cffi pyyaml pathlib2 psutil scipy requests absl-py "fastapi>=0.110.0" "uvloop>=0.19.0" "urllib3<1.27"' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'WORKDIR /opt/media/bin' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'COPY . /opt/media/bin' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
-          echo 'RUN pip3 install --no-cache-dir -r /opt/media/bin/requirements-nvidia.txt' >> ${RELEASE_DIR}/Dockerfile
+          echo 'RUN python3.9 -m pip install --no-cache-dir -r /opt/media/bin/requirements-nvidia.txt' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'CMD ["/opt/media/bin/start.sh"]' >> ${RELEASE_DIR}/Dockerfile
 
