@@ -109,6 +109,14 @@ jobs:
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v3
 
+      # 基础镜像 zlmediakit/zlm_dev:ppu 为私有仓库, 需先登录 docker.io 才能拉取
+      - name: Log into docker.io
+        uses: docker/login-action@v3
+        with:
+          registry: docker.io
+          username: zlmediakit
+          password: ${{ secrets.DOCKER_IO_SECRET }}
+
       - name: Log into registry ${{ env.REGISTRY }}
         uses: docker/login-action@v3
         with:
@@ -171,17 +179,18 @@ jobs:
           echo 'RUN apt-get update && apt-get install -y --no-install-recommends python3-pip && rm -rf /var/lib/apt/lists/*' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           # ubuntu24.04 的 python 为 externally-managed 环境, 需 --break-system-packages 才允许 pip 全局安装
-          echo 'RUN python3 -m pip install --no-cache-dir --break-system-packages "boto3>=1.28.0" "kafka-python>=2.0.2" attrs cython decorator sympy cffi pyyaml pathlib2 psutil scipy requests absl-py "fastapi>=0.110.0" "uvloop>=0.19.0"' >> ${RELEASE_DIR}/Dockerfile
+          # 基础镜像内置的 pip 源是平头哥内网 art-pub(需认证), CI 访问不到, 显式指定公网 PyPI
+          echo 'RUN python3 -m pip install --no-cache-dir --no-input --break-system-packages -i https://pypi.org/simple "boto3>=1.28.0" "kafka-python>=2.0.2" attrs cython decorator sympy cffi pyyaml pathlib2 psutil scipy requests absl-py "fastapi>=0.110.0" "uvloop>=0.19.0"' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'WORKDIR /opt/media/bin' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'COPY . /opt/media/bin' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
-          echo 'RUN python3 -m pip install --no-cache-dir --break-system-packages -r /opt/media/bin/requirements.txt' >> ${RELEASE_DIR}/Dockerfile
+          echo 'RUN python3 -m pip install --no-cache-dir --no-input --break-system-packages -i https://pypi.org/simple -r /opt/media/bin/requirements.txt' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           # PyPI 的 onnxruntime-gpu 是 NVIDIA 架构预编译 kernel, PPU 上跑不了;
           # 这里装的是 linux_ppu 用 PPU 工具链编译出的 wheel, 装完删除以免镜像里留两份
-          echo 'RUN python3 -m pip install --no-cache-dir --break-system-packages /opt/media/bin/depends/wheel/onnxruntime_gpu-*.whl && rm -rf /opt/media/bin/depends/wheel' >> ${RELEASE_DIR}/Dockerfile
+          echo 'RUN python3 -m pip install --no-cache-dir --no-input --break-system-packages -i https://pypi.org/simple /opt/media/bin/depends/wheel/onnxruntime_gpu-*.whl && rm -rf /opt/media/bin/depends/wheel' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           echo 'RUN python3 -c "import onnxruntime as ort; print(ort.__version__, ort.get_available_providers())"' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
