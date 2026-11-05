@@ -134,9 +134,9 @@ jobs:
             python3 --version
             gcc --version
 
-            source /usr/local/Ascend/cann-8.5.0/set_env.sh
+            source /usr/local/Ascend/cann/set_env.sh
             export PKG_CONFIG_PATH=/root/xzl/install/lib/pkgconfig/:$PKG_CONFIG_PATH
-            export LD_LIBRARY_PATH=/root/xzl/install/lib/:/root/xzl/install/lib64/:/usr/local/Ascend/cann-8.5.0/aarch64-linux/devlib/:$LD_LIBRARY_PATH
+            export LD_LIBRARY_PATH=/root/xzl/install/lib/:/root/xzl/install/lib64/:/usr/local/Ascend/cann/aarch64-linux/devlib/:$LD_LIBRARY_PATH
 
             # openEuler 官方源偶发 502/504 和 HTTP/2 帧错误导致元数据下载失败，
             # 切换到华为云镜像源并关闭 metalink；仓库采用白名单：只启用 OS/everything/EPOL
@@ -168,7 +168,7 @@ jobs:
             -DVCPKG_TARGET_TRIPLET=arm64-linux-dynamic \
             -DCMAKE_TOOLCHAIN_FILE=/root/git/3rdpart/vcpkg/scripts/buildsystems/vcpkg.cmake \
             -DOpenCV_DIR=/root/xzl/install/lib64/cmake/opencv4 \
-            -DCMAKE_CXX_FLAGS='-I/usr/local/Ascend/cann-8.5.0/aarch64-linux/include -L/usr/local/Ascend/cann-8.5.0/aarch64-linux/devlib/' \
+            -DCMAKE_CXX_FLAGS='-I/usr/local/Ascend/cann/aarch64-linux/include -L/usr/local/Ascend/cann/aarch64-linux/devlib/' \
             -DENABLE_API=OFF
           
             make -j \$(nproc)
