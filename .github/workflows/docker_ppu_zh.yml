@@ -176,7 +176,8 @@ jobs:
           echo 'EXPOSE 8000/tcp' >> ${RELEASE_DIR}/Dockerfile
           echo 'EXPOSE 9000/udp' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
-          echo 'RUN apt-get update && apt-get install -y --no-install-recommends python3-pip && rm -rf /var/lib/apt/lists/*' >> ${RELEASE_DIR}/Dockerfile
+          # ffmpeg/编解码与字体等运行时依赖(与 LinuxPPU 编译环境保持一致)
+          echo 'RUN apt-get update && apt-get install -y --no-install-recommends python3-pip ffmpeg libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libavdevice-dev libswscale-dev libswresample-dev libssl-dev libopus-dev libharfbuzz-dev libfreetype-dev libfribidi-dev libfontconfig-dev libjemalloc-dev && rm -rf /var/lib/apt/lists/*' >> ${RELEASE_DIR}/Dockerfile
           echo '' >> ${RELEASE_DIR}/Dockerfile
           # ubuntu24.04 的 python 为 externally-managed 环境, 需 --break-system-packages 才允许 pip 全局安装
           # 基础镜像内置的 pip 源是平头哥内网 art-pub(需认证), CI 访问不到, 显式指定公网 PyPI
