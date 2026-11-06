@@ -144,24 +144,44 @@ jobs:
           chmod +x ${RELEASE_DIR}/start.sh
           # 生成 python 插件依赖清单(onnxruntime 用 linux_ppu 产出的 PPU wheel, 不走 PyPI)
           cat > ${RELEASE_DIR}/requirements.txt <<'EOF'
-          # Common dependencies for the Python plugins.
-          numpy>=1.24,<3
-          opencv-python-headless>=4.8,<5
+          # Dependencies for ALL repository Python files: plugins, legacy scripts,
+          # coordinate tools, demos, tests, benchmarks, and bundled MQTT imports.
+          # Choose ONE runtime entry file:
+          # requirements.txt (CPU), requirements-nvidia.txt, or requirements-ascend.txt.
+          # NumPy/OpenCV are pinned; other packages use compatibility ranges.
+
+          --index-url https://mirrors.aliyun.com/pypi/simple/
+          --only-binary=:all:
+
+          # Older ONNX Runtime/vendor wheels use the NumPy 1.x binary ABI.
+          numpy==1.26.4
+          # OpenCV 4.12+ requires NumPy 2 on supported Python versions.
+          opencv-python-headless==4.11.0.86
           Pillow>=10,<13
           protobuf>=3.20.3,<8
+
           # areaPlugin, OCR plugin imports, and coordinate conversion utilities.
           Shapely>=1.8.5,<3
           sympy>=1.12,<2
           pyproj>=3.5,<4
           geopy>=2.3,<3
+
           # AIS WebSocket client.
           websocket-client>=1.6,<2
+
           # MQTT, including the bundled client's optional DNS SRV and proxy imports.
+          # The plugin still prefers py_plugins/vendor/paho when that directory exists.
           paho-mqtt==2.1.0
           dnspython>=2.3,<3
           PySocks>=1.7.1,<2
+
           # Compatibility imports used by bundled paho-mqtt on older Python versions.
           typing-extensions>=4.4,<5
+
+          # plugin_loader is provided by MediaServer's native plugin, not by PyPI.
+          # unittest and other standard-library modules do not need pip installation.
+          # Dependencies of the listed packages are resolved automatically by pip.
+          # PaddleOCR, paddlepaddle, torch and onnx are not required for OCR inference.
           EOF
           # 生成 Dockerfile
           echo 'FROM zlmediakit/zlm_dev:ppu' > ${RELEASE_DIR}/Dockerfile
