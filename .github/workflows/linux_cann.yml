@@ -134,7 +134,7 @@ jobs:
             python3 --version
             gcc --version
 
-            source /usr/local/Ascend/cann/set_env.sh
+            source /usr/local/Ascend/ascend-toolkit/set_env.sh
             export PKG_CONFIG_PATH=/root/xzl/install/lib/pkgconfig/:$PKG_CONFIG_PATH
             export LD_LIBRARY_PATH=/root/xzl/install/lib/:/root/xzl/install/lib64/:/usr/local/Ascend/cann/aarch64-linux/devlib/:$LD_LIBRARY_PATH
 

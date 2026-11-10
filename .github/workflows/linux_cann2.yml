@@ -134,7 +134,7 @@ jobs:
             python3 --version
             gcc --version
 
-            source /usr/local/Ascend/cann/set_env.sh
+            source /usr/local/Ascend/ascend-toolkit/set_env.sh
             export LD_LIBRARY_PATH=/usr/local/Ascend/cann/aarch64-linux/devlib/:$LD_LIBRARY_PATH
 
             # openEuler 官方源偶发 502/504 和 HTTP/2 帧错误导致元数据下载失败，
